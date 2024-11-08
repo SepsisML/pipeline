@@ -3,17 +3,16 @@ import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 
 
-class ModelValidationStep:
-    def __init__(self, model, X_train, y_train, X_test, y_test):
+class Metrics:
+    def __init__(self, y_pred, X_train, y_train, X_test, y_test):
         """
         Inicializa la clase con el modelo entrenado y los datos para validación.
         """
-        self.model = model  # Modelo entrenado (con búsqueda de hiperparámetros)
+        self.y_pred = y_pred
         self.X_train = X_train
         self.y_train = y_train
         self.X_test = X_test
         self.y_test = y_test
-        self.y_pred = None
         self.fpr = None
         self.tpr = None
 
@@ -47,6 +46,10 @@ class ModelValidationStep:
             5, 5), show_normed=False, cmap='Set2')
         plt.tight_layout()
         plt.show()
+
+    def plot_f1_score(self):
+        f1_score = metrics.f1_score(self.y_test, self.y_pred)
+        print("El F1_Score es: ", f1_score)
 
     def plot_roc_curve(self):
         """

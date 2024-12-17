@@ -86,11 +86,7 @@ class GradientBoostedDecisionTrees:
         # Almacena el mejor modelo y parámetros
         self.best_model = result
         self.best_params = result.best_params_
-
-        print('Best Score: %s' % result.best_score_)
-        print('Best Hyperparameters: %s' % result.best_params_)
-
-        return self.best_model
+        return self.best_model, self.best_params
 
     def predict(self, X_test):
         """

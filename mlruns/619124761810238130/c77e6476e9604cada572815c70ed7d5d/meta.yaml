@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Administrador/Desktop/tesis/risk_sepsis_ml/mlruns/619124761810238130/c77e6476e9604cada572815c70ed7d5d/artifacts
+end_time: 1732244812394
+entry_point_name: ''
+experiment_id: '619124761810238130'
+lifecycle_stage: active
+run_id: c77e6476e9604cada572815c70ed7d5d
+run_name: stylish-loon-559
+run_uuid: c77e6476e9604cada572815c70ed7d5d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1732244735669
+status: 3
+tags: []
+user_id: Administrador

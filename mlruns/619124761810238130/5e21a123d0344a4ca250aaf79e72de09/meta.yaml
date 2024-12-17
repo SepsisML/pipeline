@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Administrador/Desktop/tesis/risk_sepsis_ml/mlruns/619124761810238130/5e21a123d0344a4ca250aaf79e72de09/artifacts
+end_time: 1733204650343
+entry_point_name: ''
+experiment_id: '619124761810238130'
+lifecycle_stage: active
+run_id: 5e21a123d0344a4ca250aaf79e72de09
+run_name: popular-shrimp-989
+run_uuid: 5e21a123d0344a4ca250aaf79e72de09
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1733204525075
+status: 3
+tags: []
+user_id: Administrador

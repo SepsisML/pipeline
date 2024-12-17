@@ -50,6 +50,7 @@ class Metrics:
     def plot_f1_score(self):
         f1_score = metrics.f1_score(self.y_test, self.y_pred)
         print("El F1_Score es: ", f1_score)
+        return f1_score
 
     def plot_roc_curve(self):
         """

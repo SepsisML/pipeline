@@ -4,13 +4,13 @@ from models import GradientBoostedDecisionTrees
 
 
 class ModelTrainingStep:
-    def __init__(self, train_data, model, params=None):
+    def __init__(self, train_data, algorithm, params=None):
         self.train_data = train_data
         self.params = params
-        self.model = model
+        self.algorithm = algorithm
 
-    def execute(self):
+    def train(self):
         X_train, y_train = self.train_data
-        self.model.grid_search(X_train, y_train)
-        # self.model.save_model()
-        return self.model
+        best_model, selected_hyperparameters = self.algorithm.grid_search(
+            X_train, y_train)
+        return best_model, selected_hyperparameters

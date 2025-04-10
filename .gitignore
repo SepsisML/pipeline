@@ -1,4 +1,9 @@
-/data
-/venv
-*.pkl
+/risk_sepsis_ml/data
+risk_sepsis_ml/venv
+**/*.pkl
 **/__pycache__/
+*training
+*/.env
+*/venv
+*/.serverless
+*/node_modules

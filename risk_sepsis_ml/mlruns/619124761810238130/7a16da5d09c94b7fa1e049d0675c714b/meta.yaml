@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Administrador/Desktop/tesis/risk_sepsis_ml/mlruns/619124761810238130/7a16da5d09c94b7fa1e049d0675c714b/artifacts
+end_time: 1743106061447
+entry_point_name: ''
+experiment_id: '619124761810238130'
+lifecycle_stage: active
+run_id: 7a16da5d09c94b7fa1e049d0675c714b
+run_name: languid-rook-652
+run_uuid: 7a16da5d09c94b7fa1e049d0675c714b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1743106024932
+status: 4
+tags: []
+user_id: Administrador

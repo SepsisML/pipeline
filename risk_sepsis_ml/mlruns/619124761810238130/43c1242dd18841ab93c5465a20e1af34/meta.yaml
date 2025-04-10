@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Administrador/Desktop/tesis/risk_sepsis_ml/mlruns/619124761810238130/43c1242dd18841ab93c5465a20e1af34/artifacts
+end_time: 1743699682543
+entry_point_name: ''
+experiment_id: '619124761810238130'
+lifecycle_stage: active
+run_id: 43c1242dd18841ab93c5465a20e1af34
+run_name: bouncy-fish-594
+run_uuid: 43c1242dd18841ab93c5465a20e1af34
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1743699591811
+status: 4
+tags: []
+user_id: Administrador

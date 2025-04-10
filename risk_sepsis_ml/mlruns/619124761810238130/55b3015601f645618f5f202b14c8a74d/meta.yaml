@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Administrador/Desktop/tesis/risk_sepsis_ml/mlruns/619124761810238130/55b3015601f645618f5f202b14c8a74d/artifacts
+end_time: 1743712161273
+entry_point_name: ''
+experiment_id: '619124761810238130'
+lifecycle_stage: active
+run_id: 55b3015601f645618f5f202b14c8a74d
+run_name: lyrical-colt-697
+run_uuid: 55b3015601f645618f5f202b14c8a74d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1743712067340
+status: 3
+tags: []
+user_id: Administrador

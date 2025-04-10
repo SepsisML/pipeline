@@ -1,0 +1,23 @@
+service: api-lambda
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true  # Usa Docker para instalar las librerías en un entorno compatible con Lambda
+    layer: true 
+
+functions:
+  predict:
+    handler: lambda_function.lambda_handler
+    events:
+      - http:
+          path: predict
+          method: post
+          cors: true

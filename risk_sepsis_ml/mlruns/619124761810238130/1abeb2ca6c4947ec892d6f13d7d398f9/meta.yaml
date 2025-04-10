@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Administrador/Desktop/tesis/risk_sepsis_ml/mlruns/619124761810238130/1abeb2ca6c4947ec892d6f13d7d398f9/artifacts
+end_time: 1743697645076
+entry_point_name: ''
+experiment_id: '619124761810238130'
+lifecycle_stage: active
+run_id: 1abeb2ca6c4947ec892d6f13d7d398f9
+run_name: hilarious-bat-604
+run_uuid: 1abeb2ca6c4947ec892d6f13d7d398f9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1743697622562
+status: 4
+tags: []
+user_id: Administrador

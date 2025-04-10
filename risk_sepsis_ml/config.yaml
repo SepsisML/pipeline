@@ -1,0 +1,7 @@
+experiment:
+  name: "Sepsis Prediction"
+algorithm:
+  training_algorithm: "GBDT"
+imputation:
+  strategy: "custom-mean"  
+  fill_value: null

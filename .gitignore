@@ -7,3 +7,4 @@ risk_sepsis_ml/venv
 */venv
 */.serverless
 */node_modules
+*.pem

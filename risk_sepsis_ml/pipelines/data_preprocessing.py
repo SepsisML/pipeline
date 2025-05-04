@@ -15,16 +15,24 @@ class DataPreprocessingStep:
         self.random_state = random_state
         self.imputation_strategy = imputation_strategy
 
-    def load_data(self):
-        self.df = pd.read_csv(self.input_path)
-        # half_length = len(self.df) // 32
-        # self.df = self.df.iloc[:half_length]
+    def load_data_from_database(self):
+        try:
+            client = MongoClient("mongodb://localhost:27017/")
+            db = client['SepsisTraining']
+            collection = db['DataPacientesSource']
+            data = list(collection.find())
+            if data:
+                self.df = pd.DataFrame(data)
+        except Exception as e:
+            print(f"Se produjo un error al conectarse a la DB: {e}")
 
-    # Organize the dataframe and split the dataset into training and testing sets.
+    def load_data_from_csv(self):
+        self.df = pd.read_csv(self.input_path)
 
     def preprocess_data(self):
         # Loads data from csv file
-        self.load_data()
+        # self.load_data_from_csv()
+        self.load_data_from_database()
         # Defines lab attr and vital attr
         lab_attributes = [
             "pH", "PaCO2", "AST", "BUN", "Alkalinephos", "Chloride", "Creatinine",
@@ -112,7 +120,7 @@ class DataPreprocessingStep:
         """
         Imputa valores faltantes (-9999) en las columnas de signos vitales.
         Considera que la imputación se hace solo si el dato superior e inferior
-        pertenecen al mismo paciente y al mismo día y no sean -9999, después de eso saca el promedio.
+        pertenecen al mismo paciente y al mismo día y no es -9999, después de eso saca el promedio.
 
         Parámetros:
         df: DataFrame con los datos de hospitalización.

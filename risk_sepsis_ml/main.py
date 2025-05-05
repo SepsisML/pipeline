@@ -1,6 +1,6 @@
-from pipelines import DataPreprocessingStep
-from pipelines import ModelTrainingStep
-from pipelines import Metrics
+from pipeline import DataPreprocessingStep
+from pipeline import ModelTrainingStep
+from pipeline import Metrics
 from models import GradientBoostedDecisionTrees
 
 import mlflow

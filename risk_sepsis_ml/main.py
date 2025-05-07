@@ -3,64 +3,65 @@ from pipeline import ModelTrainingStep
 from pipeline import Metrics
 from models import GradientBoostedDecisionTrees
 
+import yaml
 import mlflow
 import mlflow.sklearn
-import yaml
 import joblib
 
-# Process and divide initial dataset
+from pipelines import DataPreprocessingStep, ModelTrainingStep, Metrics
+from models import GradientBoostedDecisionTrees
+
+
+def load_config(path="config.yaml"):
+    with open(path, "r") as f:
+        return yaml.safe_load(f)
+
+
+def prepare_data(config):
+    data_processor = DataPreprocessingStep(
+        input_path='data/raw/SepsisTraining.Day6-8.csv',
+        imputation_strategy=config["imputation"]["strategy"]
+    )
+    mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
+    return data_processor.preprocess_data()
+
+
+def select_model(config, cross_validation):
+    algo_name = config["algorithm"]["training_algorithm"]
+    if algo_name == "GBDT":
+        return GradientBoostedDecisionTrees(cross_validation=cross_validation)
+    raise ValueError(f"Unsupported training algorithm: {algo_name}")
+
+
+def train_and_log_model(X_train, y_train, algorithm):
+    trainer = ModelTrainingStep(train_data=(
+        X_train, y_train), algorithm=algorithm)
+    model, selected_params = trainer.train()
+    mlflow.log_params(selected_params)
+    mlflow.log_metrics({'accuracy': model.best_score_})
+    mlflow.sklearn.log_model(model, "GradientBoostedDecisionTrees")
+    joblib.dump(model, "gbdt_model.pkl")
+    return model
+
+
+def evaluate_model(model, X_train, y_train, X_test, y_test):
+    y_pred = model.predict(X_test)
+    metrics = Metrics(y_pred, X_train, y_train, X_test, y_test)
+    f1 = metrics.plot_f1_score()
+    mlflow.log_metrics({'f1_score': f1})
+    # Optional: metrics.plot_confusion_matrix()
 
 
 def main():
-    with open("config.yaml", "r") as f:
-        config = yaml.safe_load(f)
-
-    # Cargar el csv original.
-    # Llamar al stratifiedShuffleSplit (70-30)
-    # Guardar las del shuffle particiones cuando no existan (training-evaluation dataset).
-    # Se selecciona el training.
-    ##
-
+    config = load_config()
     mlflow.set_experiment(config["experiment"]["name"])
+
     with mlflow.start_run():
-        imputation_strategy = config["imputation"]["strategy"]
-        data_processor = DataPreprocessingStep(
-            input_path='data/raw/SepsisTraining.Day6-8.csv',
-            imputation_strategy=imputation_strategy)
-        mlflow.log_param("imputation_strategy", imputation_strategy)
-        X_train, X_test, y_train, y_test, cross_validation = data_processor.preprocess_data()
-
-        # Train specific model
-        training_algorithm = config["algorithm"]["training_algorithm"]
-        if (training_algorithm == "GBDT"):
-            algorithm = GradientBoostedDecisionTrees(
-                cross_validation=cross_validation)
-
-        model_trainer = ModelTrainingStep(
-            train_data=(X_train, y_train), algorithm=algorithm)
-        model, selected_hyperparameters = model_trainer.train()
-        mlflow.log_params(selected_hyperparameters)
-        mlflow.log_metrics({'accuracy': model.best_score_})
-
-        mlflow.sklearn.log_model(model, "GradientBoostedDecisionTrees")
-
-        # Model saving
-        joblib.dump(model, "gbdt_model.pkl")
-
-        # Prediction and evaluation with best model.
-        y_pred = model.predict(X_test)
-        model_validator = Metrics(
-            y_pred,  X_train, y_train, X_test, y_test)
-        f1_score = model_validator.plot_f1_score()
-
-        mlflow.log_metrics({'f1_score': f1_score})
-
-        # model_validator.plot_confusion_matrix()
+        X_train, X_test, y_train, y_test, cv = prepare_data(config)
+        model_class = select_model(config, cross_validation=cv)
+        model = train_and_log_model(X_train, y_train, model_class)
+        evaluate_model(model, X_train, y_train, X_test, y_test)
 
 
 if __name__ == "__main__":
-    # Preprocessing test
-    # data_processor = DataPreprocessingStep(
-    #     input_path='data/raw/SepsisTraining.Day6-8.csv', imputation_strategy="custom-mean")
-    # X_train, X_test, y_train, y_test, cross_validation = data_processor.preprocess_data()
     main()

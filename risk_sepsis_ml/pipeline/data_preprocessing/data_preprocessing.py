@@ -5,7 +5,7 @@ from imputers.imputation_miceforest import MiceForestImputationStrategy
 from imputers.imputation_mean import MeanImputationStrategy
 
 
-class DataPreprocessing:
+class DataPreprocessingStep:
     def __init__(self, input_path, n_splits=5, n_repeats=3, random_state=1, imputation_strategy="custom-mean"):
         self.input_path = input_path
         self.df = None

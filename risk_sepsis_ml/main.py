@@ -3,8 +3,14 @@ import mlflow
 import mlflow.sklearn
 import joblib
 
-from pipelines import DataPreprocessingStep, ModelTrainingStep, Metrics
-from models import GradientBoostedDecisionTrees
+# Pipeline steps
+from pipeline.data_preprocessing import DataPreprocessingStep
+from pipeline.model_training import ModelTrainingStep
+from pipeline.metrics import MetricsStep
+# from pipeline.visualization import ImputationPlotter
+
+# Algorithms imports
+from pipeline.model_training.models import GradientBoostedDecisionTrees
 
 
 def load_config(path="config.yaml"):
@@ -41,7 +47,7 @@ def train_and_log_model(X_train, y_train, algorithm):
 
 def evaluate_model(model, X_train, y_train, X_test, y_test):
     y_pred = model.predict(X_test)
-    metrics = Metrics(y_pred, X_train, y_train, X_test, y_test)
+    metrics = MetricsStep(y_pred, X_train, y_train, X_test, y_test)
     f1 = metrics.plot_f1_score()
     mlflow.log_metrics({'f1_score': f1})
     # Optional: metrics.plot_confusion_matrix()

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
 
 
-class Metrics:
+class MetricsStep:
     def __init__(self, y_pred, X_train, y_train, X_test, y_test):
         """
         Inicializa la clase con el modelo entrenado y los datos para validación.

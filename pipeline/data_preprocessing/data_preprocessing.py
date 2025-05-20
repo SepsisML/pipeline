@@ -2,7 +2,7 @@ import pandas as pd
 from utils import stratified_shuffle_split, repeated_stratified_k_fold
 from imputers.imputation_knn import KNNImputerStrategy
 from imputers.imputation_miceforest import MiceForestImputationStrategy
-from imputers.imputation_mean import MeanImputationStrategy
+from pipeline.data_preprocessing.imputers.imputation_custom_mean import MeanImputationStrategy
 
 
 class DataPreprocessingStep:

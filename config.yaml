@@ -3,5 +3,5 @@ experiment:
 algorithm:
   training_algorithm: "GBDT"
 imputation:
-  strategy: "custom-mean"  
+  strategy: "mean"  
   fill_value: null

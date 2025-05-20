@@ -17,4 +17,4 @@ class MeanImputationStrategy:
 
     def lab_imputation(self, df, laboratory_attributes):
         df[laboratory_attributes] = df[laboratory_attributes].fillna(
-            method='ffill', limit=12)  # hasta 12 horas de imputación
+            method='ffill', limit=12).fillna(method='bfill', limit=12)  # hasta 12 horas de imputación

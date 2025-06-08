@@ -39,9 +39,8 @@ def train_and_log_model(X_train, y_train, algorithm):
         X_train, y_train), algorithm=algorithm)
     model, selected_params = trainer.train()
     mlflow.log_params(selected_params)
-    mlflow.log_metrics({'accuracy': model.best_score_})
-    mlflow.sklearn.log_model(model, "GradientBoostedDecisionTrees")
-    joblib.dump(model, "gbdt_model.pkl")
+    mlflow.log_metrics({'Validation accuracy': model.best_score_})
+    mlflow.sklearn.log_model(model, algorithm.__name__)
     return model
 
 

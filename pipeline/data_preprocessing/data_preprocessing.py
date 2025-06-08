@@ -1,8 +1,9 @@
 import pandas as pd
 from utils import stratified_shuffle_split, repeated_stratified_k_fold
-from imputers.imputation_knn import KNNImputerStrategy
-from imputers.imputation_miceforest import MiceForestImputationStrategy
-from pipeline.data_preprocessing.imputers.imputation_custom_mean import MeanImputationStrategy
+from .imputers import KNNImputerStrategy
+from .imputers import MiceForestImputationStrategy
+from .imputers import CustomMeanImputationStrategy
+from .imputers import MeanImputationStrategy
 
 
 class DataPreprocessingStep:

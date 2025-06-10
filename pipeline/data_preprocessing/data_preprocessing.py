@@ -30,7 +30,9 @@ class DataPreprocessingStep:
         vital_attributes = ["HR", "O2Sat", "Temp",
                             "SBP", "MAP", "DBP", "Resp", "EtCO2"]
 
-        features = lab_attributes + vital_attributes
+        demographic_attributes = ["Age", "ICULOS","Gender"]
+
+        features = lab_attributes + vital_attributes + demographic_attributes
 
         # Impute missing data based on chosen strategy
         if self.imputation_strategy == "knn":
@@ -39,9 +41,13 @@ class DataPreprocessingStep:
         elif self.imputation_strategy == "miceforest":
             imputer = MiceForestImputationStrategy(
                 self.df, lab_attributes, vital_attributes)
-        elif self.imputation_strategy == "custom-mean":
+        elif self.imputation_strategy == "mean":
             imputer = MeanImputationStrategy(
                 self.df, lab_attributes, vital_attributes)
+        elif self.imputation_strategy == "custom-mean":
+            imputer = CustomMeanImputationStrategy(
+                self.df, lab_attributes, vital_attributes)
+
 
         imputer.impute()
 

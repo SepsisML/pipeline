@@ -2,6 +2,7 @@ import yaml
 import mlflow
 import mlflow.sklearn
 import joblib
+import subprocess
 
 # Pipeline steps
 from pipeline.data_preprocessing import DataPreprocessingStep
@@ -17,8 +18,14 @@ def load_config(path="config.yaml"):
     with open(path, "r") as f:
         return yaml.safe_load(f)
 
+def get_git_commit_hash():
+    result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True)
+    return result.stdout.strip()
+
 
 def prepare_data(config):
+    commit_hash = get_git_commit_hash()
+    mlflow.set_tag("dvc_git_commit", commit_hash)
     data_processor = DataPreprocessingStep(
         input_path='data/raw/SepsisTraining.Day6-8.csv',
         imputation_strategy=config["imputation"]["strategy"]
@@ -34,13 +41,14 @@ def select_model(config, cross_validation):
     raise ValueError(f"Unsupported training algorithm: {algo_name}")
 
 
-def train_and_log_model(X_train, y_train, algorithm):
+def train_and_log_model(X_train, y_train, algorithm, config):
     trainer = ModelTrainingStep(train_data=(
         X_train, y_train), algorithm=algorithm)
     model, selected_params = trainer.train()
     mlflow.log_params(selected_params)
     mlflow.log_metrics({'Validation accuracy': model.best_score_})
-    mlflow.sklearn.log_model(model, algorithm.__name__)
+    algo_name = config["algorithm"]["training_algorithm"]
+    mlflow.sklearn.log_model(model, algo_name)
     return model
 
 
@@ -52,6 +60,7 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     # Optional: metrics.plot_confusion_matrix()
 
 
+
 def main():
     config = load_config()
     mlflow.set_experiment(config["experiment"]["name"])
@@ -59,7 +68,7 @@ def main():
     with mlflow.start_run():
         X_train, X_test, y_train, y_test, cv = prepare_data(config)
         model_class = select_model(config, cross_validation=cv)
-        model = train_and_log_model(X_train, y_train, model_class)
+        model = train_and_log_model(X_train, y_train, model_class, config)
         evaluate_model(model, X_train, y_train, X_test, y_test)
 
 

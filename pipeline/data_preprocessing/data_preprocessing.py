@@ -5,6 +5,8 @@ from .imputers import MiceForestImputationStrategy
 from .imputers import CustomMeanImputationStrategy
 from .imputers import MeanImputationStrategy
 
+from sklearn.model_selection import StratifiedShuffleSplit
+
 
 class DataPreprocessingStep:
     def __init__(self, input_path, n_splits=5, n_repeats=3, random_state=1, imputation_strategy="custom-mean"):
@@ -52,8 +54,17 @@ class DataPreprocessingStep:
         imputer.impute()
 
         # Split data and prepare cross-validation
-        X_train, X_test, y_train, y_test = stratified_shuffle_split(
-            self.df, features)
+        ## Para guardar los indices con el método antiguo:
+        # X_train, X_test, y_train, y_test = stratified_shuffle_split(
+        #     self.df, features)
+
+        #Para guardar los estados usando el RandomState:
+        sss = StratifiedShuffleSplit(
+            n_splits=1, test_size=test_size, random_state=42)
+        (train_idx, test_idx) = sss.split(self.df[features], self.df[SepsisLabel])
+        X_train, X_test, y_train, y_test = X[train_idx], X[test_idx], y[train_idx], y[test_idx]
+        #########################################
+        
         cross_validation = repeated_stratified_k_fold(
             self.n_splits, self.n_repeats, self.random_state)
 

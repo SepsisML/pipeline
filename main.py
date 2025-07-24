@@ -27,7 +27,7 @@ def prepare_data(config):
     commit_hash = get_git_commit_hash()
     mlflow.set_tag("dvc_git_commit", commit_hash)
     data_processor = DataPreprocessingStep(
-        input_path='data/raw/SepsisTraining.Day6-8.csv',
+        input_path='data/raw/DataPacientes.csv',
         imputation_strategy=config["imputation"]["strategy"]
     )
     mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])

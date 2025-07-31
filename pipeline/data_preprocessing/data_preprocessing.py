@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from utils import stratified_shuffle_split, repeated_stratified_k_fold
 from .imputers import KNNImputerStrategy
 from .imputers import MiceForestImputationStrategy
@@ -9,7 +10,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 
 class DataPreprocessingStep:
-    def __init__(self, input_path, n_splits=5, n_repeats=3, random_state=1, imputation_strategy="custom-mean"):
+    def __init__(self, input_path, n_splits=3, n_repeats=1, random_state=1, imputation_strategy="custom-mean"):
         self.input_path = input_path
         self.df = None
         self.n_splits = n_splits
@@ -30,7 +31,7 @@ class DataPreprocessingStep:
             "Fibrinogen", "Platelets"
         ]
         vital_attributes = ["HR", "O2Sat", "Temp",
-                            "SBP", "MAP", "DBP", "Resp", "EtCO2"]
+                            "SBP", "MAP", "DBP", "Resp"]
 
         demographic_attributes = ["Age", "ICULOS","Gender"]
 
@@ -50,9 +51,8 @@ class DataPreprocessingStep:
             imputer = CustomMeanImputationStrategy(
                 self.df, lab_attributes, vital_attributes)
 
-
+        self.df.replace(-9999, np.nan, inplace=True)
         imputer.impute()
-
         # Split data and prepare cross-validation
         ## Para guardar los indices con el método antiguo:
         # X_train, X_test, y_train, y_test = stratified_shuffle_split(
@@ -60,11 +60,12 @@ class DataPreprocessingStep:
 
         #Para guardar los estados usando el RandomState:
         sss = StratifiedShuffleSplit(
-            n_splits=1, test_size=test_size, random_state=42)
-        (train_idx, test_idx) = sss.split(self.df[features], self.df[SepsisLabel])
-        X_train, X_test, y_train, y_test = X[train_idx], X[test_idx], y[train_idx], y[test_idx]
+            n_splits=1, test_size=0.3, random_state=42)
+        X = self.df[features]
+        y = self.df["SepsisLabel"]
+        (train_idx, test_idx) = next(sss.split(X, y))
+        X_train, X_test, y_train, y_test = X.iloc[train_idx], X.iloc[test_idx], y.iloc[train_idx], y.iloc[test_idx]
         #########################################
-        
         cross_validation = repeated_stratified_k_fold(
             self.n_splits, self.n_repeats, self.random_state)
 

@@ -55,33 +55,41 @@ from sklearn.preprocessing import label_binarize
 
 
 class GradientBoostedDecisionTrees:
-    def __init__(self, cross_validation, n_estimators=19, random_state=2016, min_samples_leaf=8):
+    def __init__(self, cross_validation, base_params={}):
         # Inicializa el modelo con los hiperparámetros por defecto
-        self.model = GradientBoostingClassifier(
-            n_estimators=n_estimators, random_state=random_state, min_samples_leaf=min_samples_leaf
-        )
-        self.n_estimators = n_estimators
-        self.random_state = random_state
-        self.min_samples_leaf = min_samples_leaf
+        self.base_params = base_params or {}
+        self.model = GradientBoostingClassifier(**base_params)
         self.best_model = None
         self.best_params = None
         self.cross_validation = cross_validation
 
-    def grid_search(self, X_train, y_train, n_splits=5, n_repeats=3, random_state=1):
+    def grid_search(self, X_train, y_train, random_state=1):
         """
         Realiza la búsqueda de hiperparámetros mediante GridSearchCV.
         """
 
         # Define el espacio de búsqueda
-        space = dict()
-        space['max_features'] = ['sqrt', 'log2']
-        space['max_depth'] = [None, 1, 3, 5, 10, 20]
-        space['subsample'] = [0.5, 1]
-        space['learning_rate'] = [0.001, 0.01, 0.1]
+        # space = {
+        # 'n_estimators': [100, 300],
+        # 'learning_rate': [0.01, 0.1],
+        # 'max_depth': [3, 5, 10],
+        # 'min_samples_leaf': [5, 10],
+        # 'subsample': [0.5, 1.0],
+        # 'max_features': ['sqrt']
+        # }
+        ## Otra opción podría ser:
+        space = {
+        'n_estimators': [100],
+        'learning_rate': [0.05, 0.1],
+        'max_depth': [3, 5],
+        'min_samples_leaf': [5, 10],
+        'subsample': [0.8],
+        'max_features': ['sqrt']
+        }       
 
         # Realiza la búsqueda de hiperparámetros
         search = GridSearchCV(
-            self.model, space, scoring='accuracy', n_jobs=-1, cv=self.cross_validation)
+            self.model, space, scoring='accuracy', n_jobs=-1, cv=self.cross_validation, verbose=1)
         result = search.fit(X_train, y_train)
         # Almacena el mejor modelo y parámetros
         self.best_model = result
@@ -95,7 +103,6 @@ class GradientBoostedDecisionTrees:
         if self.best_model is None:
             raise ValueError("El modelo no ha sido entrenado aún.")
         y_pred = self.best_model.predict(X_test)
-        print("setiembre", y_pred)
         return y_pred
 
     def evaluate(self, X_test, y_test):

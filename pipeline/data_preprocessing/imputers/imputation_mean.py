@@ -1,5 +1,5 @@
 class MeanImputationStrategy:
-    def __init__(self, dataframe, lab_attributes, vital_attributes, patient_column='Patient'):
+    def __init__(self, dataframe, lab_attributes, vital_attributes, patient_column='Paciente'):
         self.df = dataframe
         self.lab_attributes = lab_attributes
         self.vital_attributes = vital_attributes
@@ -25,9 +25,10 @@ class MeanImputationStrategy:
             .apply(lambda group: group.fillna(method='ffill', limit=12).fillna(method='bfill', limit=12))
             .reset_index(level=0, drop=True)
         )
+        
 
     def write_collection(self, name):
-        # Aquí deberías implementar cómo guardar el resultado.
-        # Por ahora, solo imprime una muestra.
+        #Los que no se imputaron con los métodos anteriores, se imputan con la media general:
+        self.df[self.lab_attributes] = self.df[self.lab_attributes].fillna(self.df[self.lab_attributes].mean())
+        self.df[self.vital_attributes] = self.df[self.vital_attributes].fillna(self.df[self.vital_attributes].mean())
         print(f"Saving collection: {name}")
-        print(self.df.head())

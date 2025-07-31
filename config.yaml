@@ -1,5 +1,7 @@
 experiment:
-  name: "Sepsis Prediction"
+  name: "First GBDT"
+run:
+  name: "GBDT mean imputation strategy"
 algorithm:
   training_algorithm: "GBDT"
 imputation:

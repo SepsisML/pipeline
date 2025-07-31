@@ -31,7 +31,6 @@ class CustomMeanImputationStrategy:
 
                 # Si hay un valor faltante
                 elif df.loc[row, col] == -9999 and row != 0 and row != len(df) - 1:
-                    print("La row vale ", row)
                     # Verificar si la fila anterior y la siguiente son del mismo paciente y día
                     same_patient_prev = df.loc[row,
                                                "Paciente"] == df.loc[row - 1, "Paciente"]

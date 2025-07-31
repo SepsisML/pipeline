@@ -65,7 +65,7 @@ def main():
     config = load_config()
     mlflow.set_experiment(config["experiment"]["name"])
 
-    with mlflow.start_run():
+    with mlflow.start_run(run_name=config["run"]["name"]):
         X_train, X_test, y_train, y_test, cv = prepare_data(config)
         model_class = select_model(config, cross_validation=cv)
         model = train_and_log_model(X_train, y_train, model_class, config)

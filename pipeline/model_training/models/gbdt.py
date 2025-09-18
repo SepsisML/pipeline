@@ -51,6 +51,7 @@ from sklearn.model_selection import GridSearchCV, RepeatedStratifiedKFold
 from sklearn.model_selection import GridSearchCV
 from sklearn import metrics
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.utils.class_weight import compute_sample_weight
 from sklearn.preprocessing import label_binarize
 
 
@@ -89,8 +90,11 @@ class GradientBoostedDecisionTrees:
 
         # Realiza la búsqueda de hiperparámetros
         search = GridSearchCV(
-            self.model, space, scoring='accuracy', n_jobs=-1, cv=self.cross_validation, verbose=1)
-        result = search.fit(X_train, y_train)
+            self.model, space, scoring='f1', n_jobs=-1, cv=self.cross_validation, verbose=1)
+        
+        sample_weights = compute_sample_weight(class_weight="balanced", y=y_train)
+        
+        result = search.fit(X_train, y_train, sample_weight=sample_weights)
         # Almacena el mejor modelo y parámetros
         self.best_model = result
         self.best_params = result.best_params_

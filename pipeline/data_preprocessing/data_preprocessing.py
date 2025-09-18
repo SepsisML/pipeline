@@ -101,18 +101,22 @@ class DataPreprocessingStep:
         self.generate_qsofa_partial(self.df)
         #self.plot_binary_groups(self.group_patients(self.df))
         
-        # Split data and prepare cross-validation
-        ## Para guardar los indices con el método antiguo:
-        # X_train, X_test, y_train, y_test = stratified_shuffle_split(
-        #     self.df, features)
+        group_labels = self.df.groupby("Paciente")["SepsisLabel"].max().reset_index()
 
-        #Para guardar los estados usando el RandomState:
-        sss = StratifiedShuffleSplit(
-            n_splits=1, test_size=0.3, random_state=42)
-        X = self.df[features]
-        y = self.df["SepsisLabel"]
-        (train_idx, test_idx) = next(sss.split(X, y))
-        X_train, X_test, y_train, y_test = X.iloc[train_idx], X.iloc[test_idx], y.iloc[train_idx], y.iloc[test_idx]
+        sss = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=42)
+
+        train_groups_idx, test_groups_idx = next(sss.split(
+            group_labels["Paciente"], group_labels["SepsisLabel"]
+        ))
+
+        train_groups = group_labels.iloc[train_groups_idx]["Paciente"]
+        test_groups = group_labels.iloc[test_groups_idx]["Paciente"]
+
+        train_mask = self.df["Paciente"].isin(train_groups)
+        test_mask = self.df["Paciente"].isin(test_groups)
+
+        X_train, X_test = self.df.loc[train_mask, features], self.df.loc[test_mask, features]
+        y_train, y_test = self.df.loc[train_mask, "SepsisLabel"], self.df.loc[test_mask, "SepsisLabel"]
         #########################################
         cross_validation = repeated_stratified_k_fold(
             self.n_splits, self.n_repeats, self.random_state)

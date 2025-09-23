@@ -36,12 +36,12 @@ class DataPreprocessingStep:
         df['qsofa_score_partial'] = df['qsofa_rr'] + df['qsofa_pas']
 
     def group_patients(self, df):
-        pacientes = df.groupby("Paciente").agg({
+        df = df.groupby("Paciente").agg({
             "SepsisLabel": lambda x: int(x.max() >= 1),
             "qsofa_score_partial": lambda x: int((x >= 2).any()), ##Punto de corte de escala
             "sirs_score": lambda x: int((x >= 2).any())
         }).reset_index()
-        pacientes["Grupo"] = pacientes[["SepsisLabel", "qsofa_score_partial", "sirs_score"]].astype(str).agg(''.join, axis=1)
+        df["Grupo"] = df[["SepsisLabel", "qsofa_score_partial", "sirs_score"]].astype(str).agg(''.join, axis=1)
         
         # mapping = {
         #     "101": "100",
@@ -49,7 +49,7 @@ class DataPreprocessingStep:
         
         # pacientes["Grupo"] = pacientes["Grupo"].replace(mapping)
         
-        return pacientes
+        return df
 
     def plot_binary_groups(self, df):
         frecuencias = df["Grupo"].value_counts().sort_index().reset_index()
@@ -99,14 +99,15 @@ class DataPreprocessingStep:
         ## Engineering variables creation
         self.generate_sirs_score(self.df)
         self.generate_qsofa_partial(self.df)
+        self.group_patients(self.df)
         #self.plot_binary_groups(self.group_patients(self.df))
         
-        group_labels = self.df.groupby("Paciente")["SepsisLabel"].max().reset_index()
+        group_labels = self.df.groupby("Paciente")["Grupo"].max().reset_index()
 
         sss = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=42)
 
         train_groups_idx, test_groups_idx = next(sss.split(
-            group_labels["Paciente"], group_labels["SepsisLabel"]
+            group_labels["Paciente"], group_labels["Grupo"]
         ))
 
         train_groups = group_labels.iloc[train_groups_idx]["Paciente"]

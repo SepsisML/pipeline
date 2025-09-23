@@ -70,27 +70,30 @@ class GradientBoostedDecisionTrees:
         """
 
         # Define el espacio de búsqueda
-        # space = {
-        # 'n_estimators': [100, 300],
-        # 'learning_rate': [0.01, 0.1],
-        # 'max_depth': [3, 5, 10],
-        # 'min_samples_leaf': [5, 10],
-        # 'subsample': [0.5, 1.0],
-        # 'max_features': ['sqrt']
-        # }
-        ## Otra opción podría ser:
         space = {
-        'n_estimators': [100],
-        'learning_rate': [0.05, 0.1],
-        'max_depth': [3, 5],
-        'min_samples_leaf': [5, 10],
-        'subsample': [0.8],
-        'max_features': ['sqrt']
-        }       
+            'n_estimators': [100, 200, 400],
+            'learning_rate': [0.03, 0.05, 0.1],
+            'max_depth': [3, 5, 7],
+            'min_samples_leaf': [2, 5, 10],
+            'subsample': [0.6, 0.8, 1.0],
+            'max_features': ['sqrt', 'log2', None]
+        }
 
         # Realiza la búsqueda de hiperparámetros
+        scoring = {
+            'f1': 'f1',
+            'average_precision': 'average_precision'
+        }
         search = GridSearchCV(
-            self.model, space, scoring='f1', n_jobs=-1, cv=self.cross_validation, verbose=1)
+            self.model,
+            space,
+            scoring=scoring,
+            refit='f1',
+            n_jobs=6,
+            cv=self.cross_validation,
+            verbose=1,
+            return_train_score=False
+        )
         
         sample_weights = compute_sample_weight(class_weight="balanced", y=y_train)
         

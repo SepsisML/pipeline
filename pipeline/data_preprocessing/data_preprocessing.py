@@ -36,20 +36,26 @@ class DataPreprocessingStep:
         df['qsofa_score_partial'] = df['qsofa_rr'] + df['qsofa_pas']
 
     def group_patients(self, df):
-        df = df.groupby("Paciente").agg({
+        # Resumen por paciente (igual que antes)
+        pacientes = df.groupby("Paciente").agg({
             "SepsisLabel": lambda x: int(x.max() >= 1),
-            "qsofa_score_partial": lambda x: int((x >= 2).any()), ##Punto de corte de escala
+            "qsofa_score_partial": lambda x: int((x >= 2).any()),
             "sirs_score": lambda x: int((x >= 2).any())
         }).reset_index()
-        df["Grupo"] = df[["SepsisLabel", "qsofa_score_partial", "sirs_score"]].astype(str).agg(''.join, axis=1)
         
+        # Crear columna "Grupo"
+        pacientes["Grupo"] = pacientes[["SepsisLabel", "qsofa_score_partial", "sirs_score"]]\
+                                .astype(str).agg(''.join, axis=1)
+        
+        # Hacer merge con el df original → ahora cada fila tendrá su grupo
+        df = df.merge(pacientes[["Paciente", "Grupo"]], on="Paciente", how="left")
+        return df   
         # mapping = {
         #     "101": "100",
         # }
         
         # pacientes["Grupo"] = pacientes["Grupo"].replace(mapping)
-        
-        return df
+
 
     def plot_binary_groups(self, df):
         frecuencias = df["Grupo"].value_counts().sort_index().reset_index()
@@ -99,7 +105,7 @@ class DataPreprocessingStep:
         ## Engineering variables creation
         self.generate_sirs_score(self.df)
         self.generate_qsofa_partial(self.df)
-        self.group_patients(self.df)
+        self.df = self.group_patients(self.df)
         #self.plot_binary_groups(self.group_patients(self.df))
         
         group_labels = self.df.groupby("Paciente")["Grupo"].max().reset_index()

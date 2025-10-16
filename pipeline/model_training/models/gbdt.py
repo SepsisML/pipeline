@@ -47,6 +47,7 @@ Original file is located at
 
 
 import joblib
+import numpy as np
 from sklearn.model_selection import GridSearchCV, RepeatedStratifiedKFold
 from sklearn.model_selection import GridSearchCV
 from sklearn import metrics
@@ -71,31 +72,36 @@ class GradientBoostedDecisionTrees:
 
         # Define el espacio de búsqueda
         space = {
-            'n_estimators': [100, 200, 400],
-            'learning_rate': [0.03, 0.05, 0.1],
-            'max_depth': [3, 5, 7],
-            'min_samples_leaf': [2, 5, 10],
-            'subsample': [0.6, 0.8, 1.0],
-            'max_features': ['sqrt', 'log2', None]
+            'n_estimators': [ 200, 400],
+            'learning_rate': [0.03, 0.05],
+            'max_depth': [3, 5],
+            'min_samples_leaf': [5, 10],
+            'subsample': [0.8, 1.0],
+            'max_features': ['sqrt']
         }
 
         # Realiza la búsqueda de hiperparámetros
-        scoring = {
-            'f1': 'f1',
-            'average_precision': 'average_precision'
-        }
+        
         search = GridSearchCV(
             self.model,
             space,
-            scoring=scoring,
+            scoring='f1',
             refit='f1',
-            n_jobs=6,
+            n_jobs=-1,
             cv=self.cross_validation,
             verbose=1,
             return_train_score=False
         )
         
-        sample_weights = compute_sample_weight(class_weight="balanced", y=y_train)
+        n_neg = (y_train == 0).sum()
+        n_pos = (y_train == 1).sum()
+
+        # Peso proporcional inverso: más peso a la clase positiva
+        w_pos = n_neg / n_pos
+        w_neg = 1
+
+        # Vector de pesos por muestra
+        sample_weights = np.where(y_train == 1, w_pos, w_neg)
         
         result = search.fit(X_train, y_train, sample_weight=sample_weights)
         # Almacena el mejor modelo y parámetros

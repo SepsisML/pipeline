@@ -5,7 +5,7 @@ import joblib
 import subprocess
 
 # Pipeline steps
-from pipeline.data_preprocessing import DataPreprocessingStep
+from pipeline.data_management import DataManagementStep
 from pipeline.model_training import ModelTrainingStep
 from pipeline.metrics import MetricsStep
 # from pipeline.visualization import ImputationPlotter

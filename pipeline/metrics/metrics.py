@@ -1,3 +1,4 @@
+import mlflow
 from sklearn import metrics
 import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
@@ -37,17 +38,18 @@ class MetricsStep:
         Genera y muestra la matriz de confusión.
         """
         cm = metrics.confusion_matrix(self.y_test, self.y_pred)
+        mlflow.log_dict({"confusion_matrix": cm.tolist()}, "confusion_matrix/raw.json")
         print(f"Confusion Matrix (counts):\n{cm}")
         plot_confusion_matrix(conf_mat=cm, figsize=(5, 5), show_normed=False, cmap='Set2')
         plt.tight_layout()
         plt.show()
 
         # Matriz normalizada
-        cm_norm = metrics.confusion_matrix(self.y_test, self.y_pred, normalize='true')
-        print(f"Confusion Matrix (normalized by true labels):\n{cm_norm}")
-        plot_confusion_matrix(conf_mat=cm_norm, figsize=(5, 5), show_normed=True, cmap='Blues')
-        plt.tight_layout()
-        plt.show()
+        # cm_norm = metrics.confusion_matrix(self.y_test, self.y_pred, normalize='true')
+        # print(f"Confusion Matrix (normalized by true labels):\n{cm_norm}")
+        # plot_confusion_matrix(conf_mat=cm_norm, figsize=(5, 5), show_normed=True, cmap='Blues')
+        # plt.tight_layout()
+        # plt.show()
 
     def plot_f1_score(self):
         f1_score = metrics.f1_score(self.y_test, self.y_pred)

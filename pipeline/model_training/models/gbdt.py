@@ -73,8 +73,8 @@ class GradientBoostedDecisionTrees:
 
         # Define el espacio de búsqueda
         space = {
-            'n_estimators': [ 200, 400],
-            'learning_rate': [0.03, 0.05],
+            'n_estimators': [ 200],
+            'learning_rate': [0.03],
             'max_depth': [3, 5],
             'min_samples_leaf': [5, 10],
             'subsample': [0.8, 1.0],

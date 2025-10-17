@@ -57,7 +57,7 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
     metrics = MetricsStep(y_pred, X_train, y_train, X_test, y_test)
     f1 = metrics.plot_f1_score()
     mlflow.log_metrics({'f1_score': f1})
-    # Optional: metrics.plot_confusion_matrix()
+    metrics.plot_confusion_matrix()
 
 
 

@@ -26,7 +26,7 @@ def get_git_commit_hash():
 def prepare_data(config):
     commit_hash = get_git_commit_hash()
     mlflow.set_tag("dvc_git_commit", commit_hash)
-    data_processor = DataPreprocessingStep(
+    data_processor = DataManagementStep(
         input_path='data/raw/DataPacientes.csv',
         imputation_strategy=config["imputation"]["strategy"]
     )
@@ -34,10 +34,10 @@ def prepare_data(config):
     return data_processor.preprocess_data()
 
 
-def select_model(config, cross_validation):
+def select_model(config, cross_validation, groups):
     algo_name = config["algorithm"]["training_algorithm"]
     if algo_name == "GBDT":
-        return GradientBoostedDecisionTrees(cross_validation=cross_validation)
+        return GradientBoostedDecisionTrees(cross_validation=cross_validation, groups=groups)
     raise ValueError(f"Unsupported training algorithm: {algo_name}")
 
 
@@ -66,8 +66,8 @@ def main():
     mlflow.set_experiment(config["experiment"]["name"])
 
     with mlflow.start_run(run_name=config["run"]["name"]):
-        X_train, X_test, y_train, y_test, cv = prepare_data(config)
-        model_class = select_model(config, cross_validation=cv)
+        X_train, X_test, y_train, y_test, cv, groups = prepare_data(config)
+        model_class = select_model(config, cross_validation=cv, groups=groups)
         model = train_and_log_model(X_train, y_train, model_class, config)
         evaluate_model(model, X_train, y_train, X_test, y_test)
 

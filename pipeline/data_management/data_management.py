@@ -9,10 +9,10 @@ from .imputers import CustomMeanImputationStrategy
 from .imputers import MeanImputationStrategy
 
 from sklearn.model_selection import StratifiedShuffleSplit
-
+from sklearn.model_selection import GroupKFold
 
 class DataManagementStep:
-    def __init__(self, input_path, n_splits=3, n_repeats=1, random_state=1, imputation_strategy="custom-mean"):
+    def __init__(self, input_path, n_splits=3, n_repeats=1, random_state=42, imputation_strategy="custom-mean"):
         self.input_path = input_path
         self.df = None
         self.n_splits = n_splits
@@ -126,11 +126,13 @@ class DataManagementStep:
         X_train, X_test = self.df.loc[train_mask, features], self.df.loc[test_mask, features]
         y_train, y_test = self.df.loc[train_mask, "SepsisLabel"], self.df.loc[test_mask, "SepsisLabel"]
         
-        self.plot_binary_groups(self.df.loc[train_mask])
-        self.plot_binary_groups(self.df.loc[test_mask])
+        # self.plot_binary_groups(self.df.loc[train_mask])
+        # self.plot_binary_groups(self.df.loc[test_mask])
 
         #########################################
-        cross_validation = repeated_stratified_k_fold(
-            self.n_splits, self.n_repeats, self.random_state)
+        groups = self.df.loc[train_mask, "Paciente"]
 
-        return X_train, X_test, y_train, y_test, cross_validation
+        cross_validation = GroupKFold(
+            self.n_splits)
+
+        return X_train, X_test, y_train, y_test, cross_validation, groups

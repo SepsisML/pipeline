@@ -57,13 +57,14 @@ from sklearn.preprocessing import label_binarize
 
 
 class GradientBoostedDecisionTrees:
-    def __init__(self, cross_validation, base_params={}):
+    def __init__(self, cross_validation, groups, base_params={}):
         # Inicializa el modelo con los hiperparámetros por defecto
         self.base_params = base_params or {}
         self.model = GradientBoostingClassifier(**base_params)
         self.best_model = None
         self.best_params = None
         self.cross_validation = cross_validation
+        self.groups = groups
 
     def grid_search(self, X_train, y_train, random_state=1):
         """
@@ -103,7 +104,7 @@ class GradientBoostedDecisionTrees:
         # Vector de pesos por muestra
         sample_weights = np.where(y_train == 1, w_pos, w_neg)
         
-        result = search.fit(X_train, y_train, sample_weight=sample_weights)
+        result = search.fit(X_train, y_train, sample_weight=sample_weights, groups=self.groups)
         # Almacena el mejor modelo y parámetros
         self.best_model = result
         self.best_params = result.best_params_

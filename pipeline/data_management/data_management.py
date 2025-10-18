@@ -107,7 +107,7 @@ class DataManagementStep:
         self.generate_sirs_score(self.df)
         self.generate_qsofa_partial(self.df)
         self.df = self.group_patients(self.df)
-        # self.plot_binary_groups(self.df)
+        self.plot_binary_groups(self.df)
         
         group_labels = self.df.groupby("Paciente")["Grupo"].max().reset_index()
 
@@ -126,12 +126,12 @@ class DataManagementStep:
         X_train, X_test = self.df.loc[train_mask, features], self.df.loc[test_mask, features]
         y_train, y_test = self.df.loc[train_mask, "SepsisLabel"], self.df.loc[test_mask, "SepsisLabel"]
         
-        # self.plot_binary_groups(self.df.loc[train_mask])
-        # self.plot_binary_groups(self.df.loc[test_mask])
+        self.plot_binary_groups(self.df.loc[train_mask])
+        self.plot_binary_groups(self.df.loc[test_mask])
 
         #########################################
         groups = self.df.loc[train_mask, "Paciente"]
-
+        ## Se incorpora GroupKFold pues permite que la división se haga respetando la unidad "Paciente"
         cross_validation = GroupKFold(
             self.n_splits)
 

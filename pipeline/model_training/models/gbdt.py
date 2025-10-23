@@ -88,10 +88,10 @@ class GradientBoostedDecisionTrees:
             space,
             scoring='f1',
             refit='f1',
-            n_jobs=-1,
+            n_jobs=6,
             cv=self.cross_validation,
             verbose=1,
-            return_train_score=False
+            return_train_score=False,
         )
         
         n_neg = (y_train == 0).sum()

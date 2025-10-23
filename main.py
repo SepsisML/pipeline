@@ -37,7 +37,7 @@ def prepare_data(config):
 def select_model(config, cross_validation, groups):
     algo_name = config["algorithm"]["training_algorithm"]
     if algo_name == "GBDT":
-        return GradientBoostedDecisionTrees(cross_validation=cross_validation, groups=groups)
+        return GradientBoostedDecisionTrees(cross_validation=cross_validation, groups=groups, base_params={'random_state': 42})
     raise ValueError(f"Unsupported training algorithm: {algo_name}")
 
 

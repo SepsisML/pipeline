@@ -1,9 +1,9 @@
 experiment:
-  name: "First GBDT"
+  name: "First lgbm"
 run:
-  name: "GBDT mean imputation strategy"
+  name: "lgbm mean imputation strategy"
 algorithm:
-  training_algorithm: "GBDT"
+  training_algorithm: "lgbm"
 imputation:
   strategy: "mean"  
   fill_value: null

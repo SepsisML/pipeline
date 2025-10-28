@@ -12,6 +12,7 @@ from pipeline.metrics import MetricsStep
 
 # Algorithms imports
 from pipeline.model_training.models import GradientBoostedDecisionTrees
+from pipeline.model_training.models import LightGBMClassifier
 
 
 def load_config(path="config.yaml"):
@@ -36,8 +37,10 @@ def prepare_data(config):
 
 def select_model(config, cross_validation, groups):
     algo_name = config["algorithm"]["training_algorithm"]
-    if algo_name == "GBDT":
+    if algo_name == "gbdt":
         return GradientBoostedDecisionTrees(cross_validation=cross_validation, groups=groups, base_params={'random_state': 42})
+    if algo_name == "lgbm":
+        return LightGBMClassifier(cross_validation=cross_validation,groups=groups, use_gpu=True)
     raise ValueError(f"Unsupported training algorithm: {algo_name}")
 
 

@@ -9,12 +9,18 @@ from sklearn import metrics
 from sklearn.preprocessing import label_binarize
 
 
-class LightGBMClassifierGrid:
-    def __init__(self, cross_validation, groups, base_params=None):
+class LightGBMClassifier:
+    def __init__(self, cross_validation, groups, base_params=None, use_gpu=False):
         """
         Inicializa el modelo LightGBM con parámetros base y configuración de validación cruzada.
         """
         self.base_params = base_params or {}
+        if use_gpu:
+            self.base_params.update({
+                'device_type': 'gpu',
+                'gpu_platform_id': 0,
+                'gpu_device_id': 0
+            })
         self.model = lgb.LGBMClassifier(**self.base_params)
         self.best_model = None
         self.best_params = None
@@ -27,13 +33,14 @@ class LightGBMClassifierGrid:
         """
         space = {
             'n_estimators': [200, 400],
-            'learning_rate': [0.03, 0.05, 0.1],
-            'max_depth': [3, 5, 7],
-            'num_leaves': [15, 31, 63],
-            'min_child_samples': [10, 20, 50],
-            'subsample': [0.6, 0.8, 1.0],
-            'colsample_bytree': [0.6, 0.8, 1.0]
+            'learning_rate': [0.03, 0.05],
+            'max_depth': [3, 5],
+            'num_leaves': [15, 31],
+            'min_child_samples': [10, 20],
+            'subsample': [0.8],
+            'colsample_bytree': [0.8]
         }
+
 
         search = GridSearchCV(
             self.model,

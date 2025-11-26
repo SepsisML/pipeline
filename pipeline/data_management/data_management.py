@@ -85,7 +85,7 @@ class DataManagementStep:
         engineering_variables = ["qsofa_score_partial", "sirs_score"]
 
         features = lab_attributes + vital_attributes + demographic_attributes + engineering_variables
-
+        
         # Impute missing data based on chosen strategy
         if self.imputation_strategy == "knn":
             imputer = KNNImputerStrategy(
@@ -102,7 +102,6 @@ class DataManagementStep:
 
         self.df.replace(-9999, np.nan, inplace=True)
         imputer.impute()
-
         ## Engineering variables creation
         self.generate_sirs_score(self.df)
         self.generate_qsofa_partial(self.df)

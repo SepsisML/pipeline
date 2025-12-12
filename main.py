@@ -28,8 +28,13 @@ def prepare_data(config):
     commit_hash = get_git_commit_hash()
     mlflow.set_tag("dvc_git_commit", commit_hash)
     data_processor = DataManagementStep(
-        input_path='data/raw/DataPacientes.csv',
-        imputation_strategy=config["imputation"]["strategy"]
+        imputation_strategy=config["imputation"]["strategy"],
+        is_data_imputed=config["pipeline"]["is_data_imputed"],
+        is_data_split = config["pipeline"]["is_data_split"],
+        input_path=config["path"]["input_path"],
+        imputed_path=config["path"]["imputed_path"],
+        train_path=config["path"]["train_path"],
+        test_path=config["path"]["test_path"],
     )
     mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
     return data_processor.preprocess_data()

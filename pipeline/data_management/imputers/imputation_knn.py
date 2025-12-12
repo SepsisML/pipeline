@@ -11,22 +11,20 @@ class KNNImputerStrategy:
         self.mongo_uri = mongo_uri
         self.db_name = db_name
 
-    def run(self):
+    def impute(self):
         # Conecta a MongoDB
         client = MongoClient(self.mongo_uri)
         db = client[self.db_name]
 
         # Si la colección existe, la leemos
         if "knn_imputation" in db.list_collection_names():
-            print("✅ Colección encontrada. Cargando datos desde MongoDB...")
             collection = db["knn_imputation"]
             data = list(collection.find({}, {"_id": 0}))  # evita traer el _id
             client.close()
             return pd.DataFrame(data)
 
         # Si no existe, ejecuta la imputación
-        print("⚙️ Colección no encontrada. Ejecutando imputación KNN...")
-        self.impute()
+        self.knn_impute()
 
         # Guarda los datos
         self.write_collection("knn_imputation")
@@ -34,7 +32,7 @@ class KNNImputerStrategy:
         client.close()
         return self.df
 
-    def impute(self):
+    def knn_impute(self):
         for patient_id, group in self.df.groupby("Paciente"):
             vital_imputer = KNNImputer(n_neighbors=3, weights='uniform')
             lab_imputer = KNNImputer(n_neighbors=5, weights='distance')
@@ -70,4 +68,3 @@ class KNNImputerStrategy:
         # Inserta en MongoDB
         collection.insert_many(records)
         client.close()
-        print(f"💾 Colección '{collection_name}' guardada correctamente.")

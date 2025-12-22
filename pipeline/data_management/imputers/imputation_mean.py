@@ -31,4 +31,3 @@ class MeanImputationStrategy:
         #Los que no se imputaron con los métodos anteriores, se imputan con la media general:
         self.df[self.lab_attributes] = self.df[self.lab_attributes].fillna(self.df[self.lab_attributes].mean())
         self.df[self.vital_attributes] = self.df[self.vital_attributes].fillna(self.df[self.vital_attributes].mean())
-        print(f"Saving collection: {name}")

@@ -7,3 +7,11 @@ algorithm:
 imputation:
   strategy: "mean"  
   fill_value: null
+pipeline:
+  is_data_split: true
+  is_data_imputed: false
+path:
+  input_path: "data/raw/hospitalA_Not_Imputed.csv"
+  imputed_path: null
+  train_path: "data/raw/Train_Ids.csv"
+  test_path: "data/raw/Test_Ids.csv"

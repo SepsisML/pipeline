@@ -27,6 +27,14 @@ def get_git_commit_hash():
 def prepare_data(config):
     commit_hash = get_git_commit_hash()
     mlflow.set_tag("dvc_git_commit", commit_hash)
+
+
+    ## Step 1-6: load data,
+        # step 2: impute data,
+        # step 3: normalize data, 
+        # step 4: intermediate variables creation, -> SIRS and QSOFA scores
+        # step 5: group patients, -> patients with more than 1 sepsis event are grouped 
+        # step 6: split data, 
     data_processor = DataManagementStep(
         imputation_strategy=config["imputation"]["strategy"],
         is_data_imputed=config["pipeline"]["is_data_imputed"],
@@ -70,13 +78,33 @@ def evaluate_model(model, X_train, y_train, X_test, y_test):
 
 
 def main():
+
+
+    ##########################################
+    ## Use Case: pipeline sepsischallenge-2019 
+    ## Pipeline: 
+        # step 1: load data, 
+        # step 2: impute data,
+        # step 3: normalize data, 
+        # step 4: intermediate variables creation, -> SIRS and QSOFA scores
+        # step 5: group patients, -> patients with more than 1 sepsis event are grouped 
+        # step 6: split data, 
+        # step 7: train model, 
+        # step 8: evaluate model
+        
     config = load_config()
     mlflow.set_experiment(config["experiment"]["name"])
 
     with mlflow.start_run(run_name=config["run"]["name"]):
+        ## Step 1-6: load data,
+        #  
         X_train, X_test, y_train, y_test, cv, groups = prepare_data(config)
+
+        ## Step 7: train model
         model_class = select_model(config, cross_validation=cv, groups=groups)
         model = train_and_log_model(X_train, y_train, model_class, config)
+
+        ## Step 8: evaluate model
         evaluate_model(model, X_train, y_train, X_test, y_test)
 
 

@@ -140,6 +140,7 @@ class DataManagementStep:
         X_train, X_test = self.df.loc[train_mask, FEATURES], self.df.loc[test_mask, FEATURES]
         y_train, y_test = self.df.loc[train_mask, "SepsisLabel"], self.df.loc[test_mask, "SepsisLabel"]
         
+        ## Save train and test data to csv -> improve to save into data/sandbox-'expid'/imputed-'imputation_strategy'/train.csv and test .csv
         self.df.loc[train_mask].to_csv("hospitalA_Train.csv", index=False)
         self.df.loc[test_mask].to_csv("hospitalA_Test.csv", index=False)
 

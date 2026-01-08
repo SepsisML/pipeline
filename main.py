@@ -5,14 +5,14 @@ import joblib
 import subprocess
 
 # Pipeline steps
-from pipeline.data_management import DataManagementStep
-from pipeline.model_training import ModelTrainingStep
-from pipeline.metrics import MetricsStep
-# from pipeline.visualization import ImputationPlotter
+from sepsismlops.data_management import DataManagementStep
+from sepsismlops.model_training import ModelTrainingStep
+from sepsismlops.metrics import MetricsStep
+# from sepsismlops.visualization import ImputationPlotter
 
 # Algorithms imports
-from pipeline.model_training.models import GradientBoostedDecisionTrees
-from pipeline.model_training.models import LightGBMClassifier
+from sepsismlops.model_training.models import GradientBoostedDecisionTrees
+from sepsismlops.model_training.models import LightGBMClassifier
 
 
 def load_config(path="config.yaml"):
@@ -44,8 +44,13 @@ def prepare_data(config):
         train_path=config["path"]["train_path"],
         test_path=config["path"]["test_path"],
     )
+    ##Pipeline  example
+    data_processor.load_data()
+    data_processor.impute_data()
+    data_processor.group_data()
+    X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data()
     mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
-    return data_processor.preprocess_data()
+    return X_train, X_test, y_train, y_test, cv, groups
 
 
 def select_model(config, cross_validation, groups):

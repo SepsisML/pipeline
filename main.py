@@ -9,6 +9,8 @@ from sepsismlops.data_management import DataManagementStep
 from sepsismlops.model_training import ModelTrainingStep
 from sepsismlops.metrics import MetricsStep
 # from sepsismlops.visualization import ImputationPlotter
+from sepsismlops.data_management.normalizers import min_max_normalize 
+from sepsismlops.data_management.normalizers import z_score_normalize 
 
 # Algorithms imports
 from sepsismlops.model_training.models import GradientBoostedDecisionTrees
@@ -24,31 +26,26 @@ def get_git_commit_hash():
     return result.stdout.strip()
 
 
-def prepare_data(config):
+def preprocess_pipeline(config):
     commit_hash = get_git_commit_hash()
     mlflow.set_tag("dvc_git_commit", commit_hash)
 
 
     ## Step 1-6: load data,
         # step 2: impute data,
-        # step 3: normalize data, 
-        # step 4: intermediate variables creation, -> SIRS and QSOFA scores
-        # step 5: group patients, -> patients with more than 1 sepsis event are grouped 
+        # step 3: normalize data, (*)
+        # step 4: intermediate variables creation, -> SIRS and QSOFA scores (*)
+        # step 5: group patients, -> patients with more than 1 sepsis event are grouped (*)
         # step 6: split data, 
     data_processor = DataManagementStep(
         imputation_strategy=config["imputation"]["strategy"],
-        is_data_imputed=config["pipeline"]["is_data_imputed"],
-        is_data_split = config["pipeline"]["is_data_split"],
-        input_path=config["path"]["input_path"],
-        imputed_path=config["path"]["imputed_path"],
-        train_path=config["path"]["train_path"],
-        test_path=config["path"]["test_path"],
     )
     ##Pipeline  example
-    data_processor.load_data()
-    data_processor.impute_data()
-    data_processor.group_data()
-    X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data()
+    df = data_processor.load_data(config["path"]["input_path"])
+    imputed_df = data_processor.impute_data(df)
+    group_df = data_processor.group_data(imputed_df)
+    normalized_df = min_max_normalize(group_df)
+    X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(group_df)
     mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
     return X_train, X_test, y_train, y_test, cv, groups
 
@@ -103,7 +100,7 @@ def main():
     with mlflow.start_run(run_name=config["run"]["name"]):
         ## Step 1-6: load data,
         #  
-        X_train, X_test, y_train, y_test, cv, groups = prepare_data(config)
+        X_train, X_test, y_train, y_test, cv, groups = preprocess_pipeline(config)
 
         ## Step 7: train model
         model_class = select_model(config, cross_validation=cv, groups=groups)

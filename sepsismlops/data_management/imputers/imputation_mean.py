@@ -8,6 +8,7 @@ class MeanImputationStrategy:
     def impute(self):
         self.vital_imputation()
         self.lab_imputation()
+        return self.df
         self.write_collection("mean-imputation")
 
     def vital_imputation(self):

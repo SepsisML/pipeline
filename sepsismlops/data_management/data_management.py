@@ -20,18 +20,15 @@ class DataManagementStep:
         self.imputation_strategy = imputation_strategy
         
 
-    def load_split_data(self):
-        self.load_data()
-        train_ids = pd.read_csv(self.train_path)
-        test_ids = pd.read_csv(self.test_path)
-        self.impute_data()
-        mask_train = self.df["Paciente"].isin(train_ids["Paciente"])
-        mask_test = self.df["Paciente"].isin(test_ids["Paciente"])
-        X_train = self.df.loc[mask_train, FEATURES]
-        y_train = self.df.loc[mask_train, "SepsisLabel"]
-        X_test  = self.df.loc[mask_test, FEATURES]
-        y_test  = self.df.loc[mask_test, "SepsisLabel"]
-        groups = self.df.loc[mask_train, "Paciente"]
+    def load_split_data(self, df: pd.DataFrame, train_ids: pd.DataFrame, test_ids: pd.DataFrame):
+        imputed_df = self.impute_data(df)
+        mask_train = imputed_df["Paciente"].isin(train_ids["Paciente"])
+        mask_test = imputed_df["Paciente"].isin(test_ids["Paciente"])
+        X_train = imputed_df.loc[mask_train, FEATURES]
+        y_train = imputed_df.loc[mask_train, "SepsisLabel"]
+        X_test  = imputed_df.loc[mask_test, FEATURES]
+        y_test  = imputed_df.loc[mask_test, "SepsisLabel"]
+        groups = imputed_df.loc[mask_train, "Paciente"]
         
         cross_validation = GroupKFold(
             self.n_splits)
@@ -42,9 +39,6 @@ class DataManagementStep:
     def load_data(self, path: str) -> pd.DataFrame:
         return pd.read_csv(path)
     
-    def load_imputed_data(self):
-        self.df = pd.read_csv(self.imputed_path)
-
 
     def generate_sirs_score(self, df: pd.DataFrame) -> pd.DataFrame: 
         df['sirs_temp'] = ((df['Temp'] > 38) | (df['Temp'] < 36)).astype(int)
@@ -61,18 +55,15 @@ class DataManagementStep:
         return df
         
     def group_patients(self, df: pd.DataFrame) -> pd.DataFrame:
-        # Resumen por paciente (igual que antes)
         pacientes = df.groupby("Paciente").agg({
             "SepsisLabel": lambda x: int(x.max() >= 1),
             "qsofa_score_partial": lambda x: int((x >= 2).any()),
             "sirs_score": lambda x: int((x >= 2).any())
         }).reset_index()
         
-        # Crear columna "Grupo"
         pacientes["Grupo"] = pacientes[["SepsisLabel", "qsofa_score_partial", "sirs_score"]]\
                                 .astype(str).agg(''.join, axis=1)
         
-        # Hacer merge con el df original → ahora cada fila tendrá su grupo
         df = df.merge(pacientes[["Paciente", "Grupo"]], on="Paciente", how="left")
         return df   
         # mapping = {
@@ -152,21 +143,3 @@ class DataManagementStep:
 
         return X_train, X_test, y_train, y_test, cross_validation, groups
     
-    def preprocess_data(self):
-        if self.is_data_split:
-            X_train, X_test, y_train, y_test, cross_validation, groups = self.load_split_data()
-            return X_train, X_test, y_train, y_test, cross_validation, groups
-
-        ## Imputed data without splitting
-        if self.is_data_imputed:
-            self.load_imputed_data()
-        else:
-            self.load_data()
-            self.impute_data()
-        
-        
-        self.group_data()
-
-        X_train, X_test, y_train, y_test, cross_validation, groups = self.split_data()
-        
-        return X_train, X_test, y_train, y_test, cross_validation, groups

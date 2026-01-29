@@ -3,6 +3,7 @@ import mlflow
 import mlflow.sklearn
 import joblib
 import subprocess
+import pandas as pd
 
 # Pipeline steps
 from sepsismlops.data_management import DataManagementStep
@@ -40,14 +41,31 @@ def preprocess_pipeline(config):
     data_processor = DataManagementStep(
         imputation_strategy=config["imputation"]["strategy"],
     )
-    ##Pipeline  example
-    df = data_processor.load_data(config["path"]["input_path"])
-    imputed_df = data_processor.impute_data(df)
-    group_df = data_processor.group_data(imputed_df)
-    normalized_df = min_max_normalize(group_df)
-    X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(group_df)
-    mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
-    return X_train, X_test, y_train, y_test, cv, groups
+    ##Complete pipeline
+    # mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
+    # df = data_processor.load_data(config["path"]["input_path"])
+    # imputed_df = data_processor.impute_data(df)
+    # group_df = data_processor.group_data(imputed_df)
+    # normalized_df = min_max_normalize(group_df)
+    # X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(normalized_df)
+    # return X_train, X_test, y_train, y_test, cv, groups
+    
+    
+    ##Pipeline from imputed data
+    # mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
+    # imputed_df = data_processor.load_data(config["path"]["input_path"])
+    # group_df = data_processor.group_data(imputed_df)
+    # normalized_df = min_max_normalize(group_df)
+    # X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(normalized_df)
+    # return X_train, X_test, y_train, y_test, cv, groups
+
+
+    ##Pipeline from split data
+    df = pd.read_csv(config["path"]["input_path"])
+    train_ids = pd.read_csv(config["path"]["train_path"])
+    test_ids = pd.read_csv(config["path"]["test_path"])
+    X_train, X_test, y_train, y_test, cross_validation, groups = data_processor.load_split_data(df, train_ids, test_ids)
+    return X_train, X_test, y_train, y_test, cross_validation, groups
 
 
 def select_model(config, cross_validation, groups):

@@ -8,4 +8,6 @@ imputation:
   strategy: "mean"  
   fill_value: null
 path:
-  input_path: "data/raw/hospitalA_Not_Imputed.csv"
+  input_path: "data/raw/hospitalA_Imputed_Knn.csv"
+  test_path: "data/raw/Test_Ids.csv"
+  train_path: "data/raw/Train_Ids.csv"

@@ -34,9 +34,9 @@ def preprocess_pipeline(config):
 
     ## Step 1-6: load data,
         # step 2: impute data,
-        # step 3: normalize data, (*)
-        # step 4: intermediate variables creation, -> SIRS and QSOFA scores (*)
-        # step 5: group patients, -> patients with more than 1 sepsis event are grouped (*)
+        # step 3: intermediate variables creation, -> SIRS and QSOFA scores (*)
+        # step 4: group patients, -> patients with more than 1 sepsis event are grouped (*)
+        # step 5: normalize data, (*)
         # step 6: split data, 
     data_processor = DataManagementStep(
         imputation_strategy=config["imputation"]["strategy"],

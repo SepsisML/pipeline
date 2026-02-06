@@ -56,6 +56,32 @@ class MetricsStep:
         print("El F1_Score es: ", f1_score)
         return f1_score
 
+    
+    def f1_por_paciente(df):
+        result = pd.DataFrame({
+            "Paciente": X_test["Paciente"],  # si no está: pásalo desde self.df
+            "y_test": y_test,
+            "y_pred": y_pred
+        })
+
+        # df tiene columnas: Paciente, y_test, y_pred
+        pacientes = df.groupby("Paciente")
+
+        f1_scores = []
+
+        for paciente, grupo in pacientes:
+            y_true = grupo["y_test"]
+            y_hat = grupo["y_pred"]
+
+            # estrategia simple: mayoría de las predicciones del paciente
+            true_label = 1 if y_true.mean() >= 0.5 else 0
+            pred_label = 1 if y_hat.mean() >= 0.5 else 0
+
+            f1 = f1_score([true_label], [pred_label])
+            f1_scores.append(f1)
+
+        return sum(f1_scores) / len(f1_scores)
+
     def plot_roc_curve(self):
         """
         Dibuja la curva ROC para el modelo.

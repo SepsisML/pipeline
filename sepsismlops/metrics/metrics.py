@@ -65,7 +65,7 @@ class MetricsStep:
         })
 
         # df tiene columnas: Paciente, y_test, y_pred
-        pacientes = df.groupby("Paciente")
+        pacientes = result.groupby("Paciente")
 
         f1_scores = []
 

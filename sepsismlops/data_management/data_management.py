@@ -7,7 +7,7 @@ from .imputers import KNNImputerStrategy
 from .imputers import MiceForestImputationStrategy
 from .imputers import CustomMeanImputationStrategy
 from .imputers import MeanImputationStrategy
-from config import LAB_ATTRIBUTES, VITAL_ATTRIBUTES, DEMOGRAPHIC_ATTRIBUTES, FEATURES
+from config import LAB_ATTRIBUTES, VITAL_ATTRIBUTES, DEMOGRAPHIC_ATTRIBUTES, FEATURES, SIRS_THRESHOLDS, QSOFA_THRESHOLDS
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import GroupKFold
 
@@ -41,16 +41,16 @@ class DataManagementStep:
     
 
     def generate_sirs_score(self, df: pd.DataFrame) -> pd.DataFrame: 
-        df['sirs_temp'] = ((df['Temp'] > 38) | (df['Temp'] < 36)).astype(int)
-        df['sirs_hr'] = (df['HR'] > 90).astype(int)
-        df['sirs_rr'] = (df['Resp'] > 20).astype(int)
-        df['sirs_wbc'] = ((df['WBC'] > 12000) | (df['WBC'] < 4000)).astype(int)  # suponiendo que no tienes % bandas
+        df['sirs_temp'] = ((df['Temp'] > SIRS_THRESHOLDS["temp_high"]) | (df['Temp'] < SIRS_THRESHOLDS["temp_low"])).astype(int)
+        df['sirs_hr'] = (df['HR'] > SIRS_THRESHOLDS["hr"]).astype(int)
+        df['sirs_rr'] = (df['Resp'] > SIRS_THRESHOLDS["resp"]).astype(int)
+        df['sirs_wbc'] = ((df['WBC'] > SIRS_THRESHOLDS["wbc_high"]) | (df['WBC'] < SIRS_THRESHOLDS["wbc_low"])).astype(int)  # suponiendo que no tienes % bandas
         df['sirs_score'] = df[['sirs_temp', 'sirs_hr', 'sirs_rr', 'sirs_wbc']].sum(axis=1)
         return df
 
     def generate_qsofa_partial(self, df: pd.DataFrame) -> pd.DataFrame:
-        df['qsofa_rr'] = (df['Resp'] >= 22).astype(int)
-        df['qsofa_pas'] = (df['SBP'] <= 100).astype(int)
+        df['qsofa_rr'] = (df['Resp'] >= QSOFA_THRESHOLDS["resp"]).astype(int)
+        df['qsofa_pas'] = (df['SBP'] <= QSOFA_THRESHOLDS["sbp"]).astype(int)
         df['qsofa_score_partial'] = df['qsofa_rr'] + df['qsofa_pas']
         return df
         
@@ -65,20 +65,33 @@ class DataManagementStep:
                                 .astype(str).agg(''.join, axis=1)
         
         df = df.merge(pacientes[["Paciente", "Grupo"]], on="Paciente", how="left")
-        return df   
-        # mapping = {
-        #     "101": "100",
-        # }
+           
         
-        # pacientes["Grupo"] = pacientes["Grupo"].replace(mapping)
+        mapping = {
+            "110": "111",
+            "010" : "011"
+        }
+        
+        pacientes["Grupo"] = pacientes["Grupo"].replace(mapping)
+        
+        # pacientes_a_filtrar = ["p00005", "p00002", "p00017"]
+
+        # pacientes_filtrados = df[df["Paciente"].isin(pacientes_a_filtrar)]
+
+        # imputed_df.to_csv("pacientes_filtrados")
+
+        return df
 
 
     def plot_binary_groups(self, df: pd.DataFrame):
-        frecuencias = df.groupby("Paciente")["Grupo"].max().value_counts().reset_index()
+        frecuencias = (df.groupby("Paciente")["Grupo"].max()
+            .value_counts()
+            .reindex(["000", "001", "011", "100", "101", "111"], fill_value=0)
+            .reset_index())
         #frecuencias = df["Grupo"].value_counts().sort_index().reset_index()
         frecuencias.columns = ["Grupo", "Pacientes"]
         plt.figure(figsize=(8, 5))
-        sns.barplot(data=frecuencias, x="Grupo", y="Pacientes", palette="Blues_d")
+        sns.barplot(data=frecuencias, x="Grupo", y="Pacientes", order=["000", "001", "011", "100", "101", "111"], palette="Blues_d")
         plt.title("Distribución de grupos binarios en Hospital A")
         plt.xlabel("Grupo (Sepsis, qSOFA≥2, SIRS≥2)")
         plt.ylabel("Cantidad de pacientes")

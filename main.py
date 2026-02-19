@@ -42,13 +42,15 @@ def preprocess_pipeline(config):
         imputation_strategy=config["imputation"]["strategy"],
     )
     ##Complete pipeline
-    # mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
-    # df = data_processor.load_data(config["path"]["input_path"])
-    # imputed_df = data_processor.impute_data(df)
-    # group_df = data_processor.group_data(imputed_df)
-    # normalized_df = min_max_normalize(group_df)
-    # X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(normalized_df)
-    # return X_train, X_test, y_train, y_test, cv, groups
+    mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
+    df = data_processor.load_data(config["path"]["input_path"])
+    imputed_df = data_processor.impute_data(df)
+    # imputed_df.to_csv("imputed_df_knn")
+    group_df = data_processor.group_data(imputed_df)
+    normalized_df = min_max_normalize(group_df)
+    # normalized_df.to_csv("normalized_df_knn")
+    X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(normalized_df)
+    return X_train, X_test, y_train, y_test, cv, groups
     
     
     ##Pipeline from imputed data
@@ -61,11 +63,11 @@ def preprocess_pipeline(config):
 
 
     ##Pipeline from split data
-    df = pd.read_csv(config["path"]["input_path"])
-    train_ids = pd.read_csv(config["path"]["train_path"])
-    test_ids = pd.read_csv(config["path"]["test_path"])
-    X_train, X_test, y_train, y_test, cross_validation, groups = data_processor.load_split_data(df, train_ids, test_ids)
-    return X_train, X_test, y_train, y_test, cross_validation, groups
+    # df = pd.read_csv(config["path"]["input_path"])
+    # train_ids = pd.read_csv(config["path"]["train_path"])
+    # test_ids = pd.read_csv(config["path"]["test_path"])
+    # X_train, X_test, y_train, y_test, cross_validation, groups = data_processor.load_split_data(df, train_ids, test_ids)
+    # return X_train, X_test, y_train, y_test, cross_validation, groups
 
 
 def select_model(config, cross_validation, groups):

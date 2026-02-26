@@ -96,20 +96,20 @@ class MetricsStep:
             plt.legend(loc="lower right")
             plt.show()
 
-    def optimize_threshold_for_f1(self):
-        """
-        Encuentra el umbral que maximiza F1 usando y_proba. Retorna (best_threshold, best_f1).
-        """
-        if self.y_proba is None:
-            raise ValueError("y_proba no está definido. Provee probabilidades para optimizar el umbral.")
-        precisions, recalls, thresholds = metrics.precision_recall_curve(self.y_test, self.y_proba)
-        f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-12)
-        best_idx = f1_scores.argmax()
-        # precision_recall_curve devuelve len(thresholds) = len(precisions)-1
-        best_threshold = thresholds[best_idx] if best_idx < len(thresholds) else 0.5
-        best_f1 = f1_scores[best_idx]
-        print(f"Best threshold by F1: {best_threshold:.4f} | F1: {best_f1:.4f}")
-        return best_threshold, best_f1
+    # def optimize_threshold_for_f1(self):
+    #     """
+    #     Encuentra el umbral que maximiza F1 usando y_proba. Retorna (best_threshold, best_f1).
+    #     """
+    #     if self.y_proba is None:
+    #         raise ValueError("y_proba no está definido. Provee probabilidades para optimizar el umbral.")
+    #     precisions, recalls, thresholds = metrics.precision_recall_curve(self.y_test, self.y_proba)
+    #     f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-12)
+    #     best_idx = f1_scores.argmax()
+    #     # precision_recall_curve devuelve len(thresholds) = len(precisions)-1
+    #     best_threshold = thresholds[best_idx] if best_idx < len(thresholds) else 0.5
+    #     best_f1 = f1_scores[best_idx]
+    #     print(f"Best threshold by F1: {best_threshold:.4f} | F1: {best_f1:.4f}")
+    #     return best_threshold, best_f1
 
     def plot_precision_recall_curve(self):
         if self.y_proba is None:

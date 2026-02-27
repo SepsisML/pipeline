@@ -45,10 +45,8 @@ def preprocess_pipeline(config):
     mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
     df = data_processor.load_data(config["path"]["input_path"])
     imputed_df = data_processor.impute_data(df)
-    # imputed_df.to_csv("imputed_df_knn")
     group_df = data_processor.group_data(imputed_df)
     normalized_df = min_max_normalize(group_df)
-    # normalized_df.to_csv("normalized_df_knn")
     X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(normalized_df)
     return X_train, X_test, y_train, y_test, cv, groups
     

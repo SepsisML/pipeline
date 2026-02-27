@@ -91,10 +91,20 @@ class DataManagementStep:
         #frecuencias = df["Grupo"].value_counts().sort_index().reset_index()
         frecuencias.columns = ["Grupo", "Pacientes"]
         plt.figure(figsize=(8, 5))
-        sns.barplot(data=frecuencias, x="Grupo", y="Pacientes", order=["000", "001", "011", "100", "101", "111"], palette="Blues_d")
+        ax = sns.barplot(data=frecuencias, x="Grupo", y="Pacientes", order=["000", "001", "011", "100", "101", "111"], palette="Blues_d")
         plt.title("Distribución de grupos binarios en Hospital A")
         plt.xlabel("Grupo (Sepsis, qSOFA≥2, SIRS≥2)")
         plt.ylabel("Cantidad de pacientes")
+        
+        for bar in ax.patches:
+            height = bar.get_height()
+            ax.annotate(
+                f"{int(height)}",
+                (bar.get_x() + bar.get_width() / 2, height),
+                ha="center",
+                va="bottom",
+                fontsize=10
+            )
         plt.show()
 
     def impute_data(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -135,7 +145,8 @@ class DataManagementStep:
 
         train_groups = group_labels.iloc[train_groups_idx]["Paciente"]
         test_groups = group_labels.iloc[test_groups_idx]["Paciente"]
-        
+        #train_groups.to_csv("Train_Ids.csv", index=False)
+        #test_groups.to_csv("Test_Ids.csv", index=False)
         train_mask = df["Paciente"].isin(train_groups)
         test_mask = df["Paciente"].isin(test_groups)
         
@@ -143,8 +154,8 @@ class DataManagementStep:
         y_train, y_test = df.loc[train_mask, "SepsisLabel"], df.loc[test_mask, "SepsisLabel"]
         
         ## Save train and test data to csv -> improve to save into data/sandbox-'expid'/imputed-'imputation_strategy'/train.csv and test .csv
-        #self.df.loc[train_mask].to_csv("hospitalA_Train.csv", index=False)
-        #self.df.loc[test_mask].to_csv("hospitalA_Test.csv", index=False)
+        #df.loc[train_mask].to_csv("hospitalB_Imputed_Knn_Train.csv", index=False)
+        #df.loc[test_mask].to_csv("hospitalB_Imputed_Knn_Test.csv", index=False)
 
         self.plot_binary_groups(df.loc[train_mask])
         self.plot_binary_groups(df.loc[test_mask])

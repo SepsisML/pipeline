@@ -12,24 +12,7 @@ class KNNImputerStrategy:
         self.db_name = db_name
 
     def impute(self):
-        # Conecta a MongoDB
-        client = MongoClient(self.mongo_uri)
-        db = client[self.db_name]
-
-        # Si la colección existe, la leemos
-        if "knn_imputation" in db.list_collection_names():
-            collection = db["knn_imputation"]
-            data = list(collection.find({}, {"_id": 0}))  # evita traer el _id
-            client.close()
-            return pd.DataFrame(data)
-
-        # Si no existe, ejecuta la imputación
         self.knn_impute()
-
-        # Guarda los datos
-        self.write_collection("knn_imputation")
-
-        client.close()
         return self.df
 
     def knn_impute(self):

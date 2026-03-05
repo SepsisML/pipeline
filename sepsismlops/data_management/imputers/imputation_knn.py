@@ -1,7 +1,7 @@
 from sklearn.impute import KNNImputer
 import numpy as np
 import pandas as pd
-from mongo_utils import write_collection, load_collection
+from utils import write_collection, load_collection
 class KNNImputerStrategy:
     def __init__(
         self, 

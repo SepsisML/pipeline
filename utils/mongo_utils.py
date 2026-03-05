@@ -1,6 +1,8 @@
 # utils/mongo_utils.py
 from pymongo import MongoClient
 from config import MONGO_URI, DEFAULT_DB_NAME
+import pandas as pd
+import numpy as np
 
 def write_collection(dataframe: pd.DataFrame, mongo_uri:str, db_name:str, collection_name:str):
         df_clean = dataframe.replace({np.nan: None})

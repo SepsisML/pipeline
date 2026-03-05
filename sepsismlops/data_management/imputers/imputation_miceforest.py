@@ -1,5 +1,5 @@
 import miceforest as mf
-from mongo_utils import write_collection, load_collection
+from utils import write_collection, load_collection
 
 class MiceForestImputationStrategy:
     def __init__(

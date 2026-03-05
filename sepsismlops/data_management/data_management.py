@@ -112,7 +112,7 @@ class DataManagementStep:
         # Impute missing data based on chosen strategy
         if self.imputation_strategy == "knn":
             imputer = KNNImputerStrategy(
-                df, LAB_ATTRIBUTES, VITAL_ATTRIBUTES)
+                df, LAB_ATTRIBUTES, VITAL_ATTRIBUTES, write_in_db=True)
         elif self.imputation_strategy == "miceforest":
             imputer = MiceForestImputationStrategy(
                 df, LAB_ATTRIBUTES, VITAL_ATTRIBUTES)

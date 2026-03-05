@@ -1,3 +1,5 @@
+from utils import write_collection, load_collection
+
 class MeanImputationStrategy:
     def __init__(
         self, 

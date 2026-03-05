@@ -1,13 +1,39 @@
 class CustomMeanImputationStrategy:
-    def __init__(self, dataframe, lab_attributes, vital_attributes):
+    def __init__(
+        self, 
+        dataframe, 
+        lab_attributes, 
+        vital_attributes,
+        load_from_db: bool = False,
+        write_in_db: bool = False, 
+        collection_name="imputation-custom-mean",
+        mongo_uri="mongodb://localhost:27017", 
+        db_name="imputation"
+    ):
         self.df = dataframe
         self.lab_attributes = lab_attributes
         self.vital_attributes = vital_attributes
+        self.load_from_db = load_from_db
+        self.write_in_db = write_in_db
+        self.collection_name = collection_name
+        self.mongo_uri = mongo_uri
+        self.db_name = db_name
 
     def impute(self):
-        self.vital_imputation()
-        self.lab_imputation()
-        self.write_collection("mean-imputation")
+        if self.load_from_db:
+            if not self.collection_name:
+                raise ValueError("collection_name es requerido si load_from_db=True")
+            return load_collection(self.mongo_uri, self.db_name, self.collection_name)
+
+        self.vital_imputation(self.df, self.vital_attributes)
+        self.lab_imputation(self.df, self.laboratory_attributes)
+
+        if self.write_in_db:
+            write_collection(self.df, self.mongo_uri, self.db_name, self.collection_name)
+        
+        return self.df
+
+        
 
     def vital_imputation(self, df, vital_attributes):
         """

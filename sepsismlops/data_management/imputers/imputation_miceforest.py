@@ -1,26 +1,50 @@
 import miceforest as mf
-
+from mongo_utils import write_collection, load_collection
 
 class MiceForestImputationStrategy:
-    def __init__(self, dataframe, lab_attributes, vital_attributes):
+    def __init__(
+        self, 
+        dataframe, 
+        lab_attributes, 
+        vital_attributes,
+        load_from_db: bool = False,
+        write_in_db: bool = False, 
+        collection_name="imputation-miceforest",
+        mongo_uri="mongodb://localhost:27017", 
+        db_name="imputation"
+    ):
         self.df = dataframe
         self.lab_attributes = lab_attributes
         self.vital_attributes = vital_attributes
+        self.load_from_db = load_from_db
+        self.write_in_db = write_in_db
+        self.collection_name = collection_name
+        self.mongo_uri = mongo_uri
+        self.db_name = db_name
 
-    def impute(self, dataframe, lab_attributes, vital_attributes):
+    def impute(self):
+        if self.load_from_db:
+            if not self.collection_name:
+                raise ValueError("collection_name es requerido si load_from_db=True")
+            return load_collection(self.mongo_uri, self.db_name, self.collection_name)
+
+        self.miceforest_impute(self.df, self.lab_attributes, self.vital_attributes)
+        return self.df
+    
+    def miceforest_impute(self, df, lab_attributes, vital_attributes):
         lab_cols = lab_attributes
         vital_cols = vital_attributes
 
-        dataframe[lab_cols] = dataframe[lab_cols].replace(-9999, np.nan)
-        dataframe[vital_cols] = dataframe[vital_cols].replace(-9999, np.nan)
+        df[lab_cols] = df[lab_cols].replace(-9999, np.nan)
+        df[vital_cols] = df[vital_cols].replace(-9999, np.nan)
         # Create kernel for lab vars
         lab_attributes_kernel = mf.ImputationKernel(
-            dataframe[lab_cols],
+            df[lab_cols],
             random_state=1991
         )
         # Create kernel for vital vars
         vital_attributes_kernel = mf.ImputationKernel(
-            dataframe[vital_cols],
+            df[vital_cols],
             random_state=1991
         )
 
@@ -29,6 +53,8 @@ class MiceForestImputationStrategy:
         vital_attributes_kernel.mice(2)
 
         # Return the completed dataset.
-        dataframe[lab_cols] = lab_attributes_kernel.complete_data()
-        dataframe[vital_cols] = vital_attributes_kernel.complete_data()
-        self.write_collection(dataframe, "miceforest")
+        df[lab_cols] = lab_attributes_kernel.complete_data()
+        df[vital_cols] = vital_attributes_kernel.complete_data()
+
+        if self.write_in_db:
+            write_collection(self.df, self.mongo_uri, self.db_name, self.collection_name)

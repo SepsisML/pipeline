@@ -45,8 +45,34 @@ def preprocess_pipeline(config):
     mlflow.log_param("imputation_strategy", config["imputation"]["strategy"])
     df = data_processor.load_data(config["path"]["input_path"])
     imputed_df = data_processor.impute_data(df)
+    #imputed_df.to_csv("knn_imputed_df.csv", index=False)
     group_df = data_processor.group_data(imputed_df)
+
+    # pacientes_objetivo = {
+    #     "000": "p000027",
+    #     "001": "p000019",
+    #     "011": "p000024",
+    #     "100": "p000616",
+    #     "101": "p000011",
+    #     "111": "p000009"
+    # }
+
+    # for grupo, paciente in pacientes_objetivo.items():
+    #     df_paciente = group_df[group_df["Paciente"] == paciente]
+        
+    #     nombre_archivo = f"knn_agrupado_paciente_{grupo}_{paciente}.csv"
+    #     df_paciente.to_csv(nombre_archivo, index=False)
+
+
     normalized_df = min_max_normalize(group_df)
+
+
+    # for grupo, paciente in pacientes_objetivo.items():
+    #     df_paciente = normalized_df[normalized_df["Paciente"] == paciente]
+        
+    #     nombre_archivo = f"knn_normalizado_paciente_{grupo}_{paciente}.csv"
+    #     df_paciente.to_csv(nombre_archivo, index=False)
+    print("#######################################FINALIZADO##################################")
     X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(normalized_df)
     return X_train, X_test, y_train, y_test, cv, groups
     

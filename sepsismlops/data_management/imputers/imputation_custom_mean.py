@@ -26,9 +26,11 @@ class CustomMeanImputationStrategy:
             if not self.collection_name:
                 raise ValueError("collection_name es requerido si load_from_db=True")
             return load_collection(self.mongo_uri, self.db_name, self.collection_name)
+        
+        self.df["Day"] = self.df.groupby("Paciente").cumcount() // 24
 
         self.vital_imputation(self.df, self.vital_attributes)
-        self.lab_imputation(self.df, self.laboratory_attributes)
+        self.lab_imputation(self.df, self.lab_attributes)
 
         if self.write_in_db:
             write_collection(self.df, self.mongo_uri, self.db_name, self.collection_name)
@@ -84,7 +86,7 @@ class CustomMeanImputationStrategy:
 
     # Función para imputar los resultados de laboratorio
 
-    def lab_imputation(self, df, laboratory_attributes):
+    def lab_imputation(self, df, lab_attributes):
         """
         Imputa valores faltantes (-9999) en las columnas de variables de laboratorio.
         La imputación considera que los datos pertenezcan al mismo paciente y mismo día.
@@ -99,7 +101,7 @@ class CustomMeanImputationStrategy:
         DataFrame con los valores imputados.
         """
         # Iterar sobre cada atributo de laboratorio
-        for col in laboratory_attributes:
+        for col in lab_attributes:
             # Iterar sobre cada día y paciente
             for (Paciente, day), group in df.groupby(['Paciente', 'Day']):
                 # Filtrar los valores existentes (distintos de -9999)

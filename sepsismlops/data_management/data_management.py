@@ -62,10 +62,7 @@ class DataManagementStep:
         }).reset_index()
         
         pacientes["Grupo"] = pacientes[["SepsisLabel", "qsofa_score_partial", "sirs_score"]]\
-                                .astype(str).agg(''.join, axis=1)
-        
-        df = df.merge(pacientes[["Paciente", "Grupo"]], on="Paciente", how="left")
-           
+                                .astype(str).agg(''.join, axis=1)  
         
         mapping = {
             "110": "111",
@@ -74,11 +71,9 @@ class DataManagementStep:
         
         pacientes["Grupo"] = pacientes["Grupo"].replace(mapping)
         
-        # pacientes_a_filtrar = ["p00005", "p00002", "p00017"]
-
-        # pacientes_filtrados = df[df["Paciente"].isin(pacientes_a_filtrar)]
-
-        # imputed_df.to_csv("pacientes_filtrados")
+        
+        df = df.merge(pacientes[["Paciente", "Grupo"]], on="Paciente", how="left")
+        
 
         return df
 

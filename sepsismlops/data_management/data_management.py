@@ -104,7 +104,7 @@ class DataManagementStep:
 
     def impute_data(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        # Impute missing data based on chosen strategy
+        # Imputar datos faltantes según la estrategia seleccionada
         if self.imputation_strategy == "knn":
             imputer = KNNImputerStrategy(
                 df, LAB_ATTRIBUTES, VITAL_ATTRIBUTES, write_in_db=True)
@@ -131,6 +131,7 @@ class DataManagementStep:
     
     def split_data(self, df: pd.DataFrame):
         group_labels = df.groupby("Paciente")["Grupo"].max().reset_index()
+        print(group_labels["Grupo"].value_counts())  # ← agregar esto
 
         sss = StratifiedShuffleSplit(n_splits=1, test_size=0.3, random_state=self.random_state)
 
@@ -148,7 +149,7 @@ class DataManagementStep:
         X_train, X_test = df.loc[train_mask, FEATURES], df.loc[test_mask, FEATURES]
         y_train, y_test = df.loc[train_mask, "SepsisLabel"], df.loc[test_mask, "SepsisLabel"]
         
-        ## Save train and test data to csv -> improve to save into data/sandbox-'expid'/imputed-'imputation_strategy'/train.csv and test .csv
+        ## Guardar datos de entrenamiento y prueba en csv -> mejorar guardando en data/sandbox-'expid'/imputed-'estrategia_imputacion'/train.csv y test.csv
         #df.loc[train_mask].to_csv("hospitalB_Imputed_Knn_Train.csv", index=False)
         #df.loc[test_mask].to_csv("hospitalB_Imputed_Knn_Test.csv", index=False)
 

@@ -37,22 +37,22 @@ class MiceForestImputationStrategy:
 
         df[lab_cols] = df[lab_cols].replace(-9999, np.nan)
         df[vital_cols] = df[vital_cols].replace(-9999, np.nan)
-        # Create kernel for lab vars
+        # Crear kernel para variables de laboratorio
         lab_attributes_kernel = mf.ImputationKernel(
             df[lab_cols],
             random_state=1991
         )
-        # Create kernel for vital vars
+        # Crear kernel para variables vitales
         vital_attributes_kernel = mf.ImputationKernel(
             df[vital_cols],
             random_state=1991
         )
 
-        # Run the MICE algorithm for 2 iterations
+        # Ejecutar el algoritmo MICE por 2 iteraciones
         lab_attributes_kernel.mice(2)
         vital_attributes_kernel.mice(2)
 
-        # Return the completed dataset.
+        # Retornar el dataset completo
         df[lab_cols] = lab_attributes_kernel.complete_data()
         df[vital_cols] = vital_attributes_kernel.complete_data()
 

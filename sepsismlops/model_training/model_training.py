@@ -1,4 +1,4 @@
-# Orchestrate model training
+# Orquestar el entrenamiento del modelo
 
 
 class ModelTrainingStep:

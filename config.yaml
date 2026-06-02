@@ -5,7 +5,7 @@ run:
 algorithm:
   training_algorithm: "lgbm"
 imputation:
-  strategy: "knn"
+  strategy: "custom-mean"
   fill_value: null
 path:
   input_path: "data/raw/hospitalA_Not_Imputed.csv"

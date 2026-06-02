@@ -1,15 +1,16 @@
 from utils import write_collection, load_collection
 
+
 class CustomMeanImputationStrategy:
     def __init__(
-        self, 
-        dataframe, 
-        lab_attributes, 
+        self,
+        dataframe,
+        lab_attributes,
         vital_attributes,
         load_from_db: bool = False,
-        write_in_db: bool = False, 
+        write_in_db: bool = False,
         collection_name="imputation-custom-mean",
-        mongo_uri="mongodb://localhost:27017", 
+        mongo_uri="mongodb://localhost:27017",
         db_name="imputation"
     ):
         self.df = dataframe
@@ -26,7 +27,8 @@ class CustomMeanImputationStrategy:
             if not self.collection_name:
                 raise ValueError("collection_name es requerido si load_from_db=True")
             return load_collection(self.mongo_uri, self.db_name, self.collection_name)
-        
+
+        self.df = self.df.reset_index(drop=True)
         self.df["Day"] = self.df.groupby("Paciente").cumcount() // 24
 
         self.vital_imputation(self.df, self.vital_attributes)
@@ -34,88 +36,40 @@ class CustomMeanImputationStrategy:
 
         if self.write_in_db:
             write_collection(self.df, self.mongo_uri, self.db_name, self.collection_name)
-        
+
         return self.df
 
-        
-
     def vital_imputation(self, df, vital_attributes):
-        """
-        Imputa valores faltantes (-9999) en las columnas de signos vitales.
-        Considera que la imputación se hace solo si el dato superior e inferior
-        pertenecen al mismo paciente y al mismo día y no sean -9999, después de eso saca el promedio.
+        # Calcular contexto de vecinos una vez, compartido entre todas las columnas
+        same_patient_prev = df["Paciente"] == df["Paciente"].shift(1)
+        same_patient_next = df["Paciente"] == df["Paciente"].shift(-1)
+        same_day_prev = df["Day"] == df["Day"].shift(1)
+        same_day_next = df["Day"] == df["Day"].shift(-1)
 
-        Parámetros:
-        df: DataFrame con los datos de hospitalización.
-        vital_attributes: Lista con los nombres de las columnas de signos vitales.
+        for col in vital_attributes:
+            mask_missing = df[col].isna()
 
-        Retorna:
-        DataFrame con los valores imputados.
-        """
-        for row in range(0, len(df)):  # Evitamos la primera y última fila
-            for col in vital_attributes:  # Iteramos sobre los signos vitales
-                if row == 0 and df.loc[row, col] == -9999:
-                    df.loc[row, col] = 0
-                elif row == len(df) - 1 and df.loc[row, col] == -9999:
-                    df.loc[row, col] = 0
+            prev_val = df[col].shift(1)
+            next_val = df[col].shift(-1)
 
-                # Si hay un valor faltante
-                elif df.loc[row, col] == -9999 and row != 0 and row != len(df) - 1:
-                    # Verificar si la fila anterior y la siguiente son del mismo paciente y día
-                    same_patient_prev = df.loc[row,
-                                               "Paciente"] == df.loc[row - 1, "Paciente"]
-                    same_patient_next = df.loc[row,
-                                               "Paciente"] == df.loc[row + 1, "Paciente"]
+            prev_valid = same_patient_prev & same_day_prev & prev_val.notna()
+            next_valid = same_patient_next & same_day_next & next_val.notna()
 
-                    same_day_prev = df.loc[row,
-                                           "Day"] == df.loc[row - 1, "Day"]
-                    same_day_next = df.loc[row,
-                                           "Day"] == df.loc[row + 1, "Day"]
+            # Ambos vecinos válidos: usar su media
+            both_valid = mask_missing & prev_valid & next_valid
+            df.loc[both_valid, col] = (prev_val[both_valid] + next_val[both_valid]) / 2
 
-                    inferior = df.loc[row - 1,
-                                      col] if same_patient_prev and same_day_prev and df.loc[row - 1, col] != -9999 else None
-                    superior = df.loc[row + 1,
-                                      col] if same_patient_next and same_day_next and df.loc[row + 1, col] != -9999 else None
-
-                    if inferior is not None and superior is not None:
-                        df.loc[row, col] = (inferior + superior) / 2
-                    else:
-                        df.loc[row, col] = 0
+            # Resto de valores faltantes: se dejan como NaN para manejo posterior
 
         return df
 
-    # Función para imputar los resultados de laboratorio
-
     def lab_imputation(self, df, lab_attributes):
-        """
-        Imputa valores faltantes (-9999) en las columnas de variables de laboratorio.
-        La imputación considera que los datos pertenezcan al mismo paciente y mismo día.
-        Para un día se tienen en cuenta todos los valores de laboratorio distintos de nulo,
-        se saca un promedio y este es el que imputará los valores faltantes.
-
-        Parámetros:
-        df: DataFrame con los datos de hospitalización.
-        vital_attributes: Lista con los nombres de las columnas de valores de laboratorio.
-
-        Retorna:
-        DataFrame con los valores imputados.
-        """
-        # Iterar sobre cada atributo de laboratorio
         for col in lab_attributes:
-            # Iterar sobre cada día y paciente
-            for (Paciente, day), group in df.groupby(['Paciente', 'Day']):
-                # Filtrar los valores existentes (distintos de -9999)
-                valores_existentes = group[col][group[col] != -9999]
+            # Marcar faltantes como NaN para que el groupby los ignore
+            df.loc[df[col] == -9999, col] = float("nan")
 
-                # Calcular el promedio de los valores existentes
-                if len(valores_existentes) > 0:
-                    promedio = valores_existentes.mean()
-                else:
-                    promedio = 0  # Si no hay valores existentes, usar 0
-
-                # Reemplazar los valores faltantes (0) con el promedio
-                df.loc[(df['Paciente'] == Paciente) &
-                       (df['Day'] == day) &
-                       (df[col] == -9999), col] = promedio
+            # Rellenar cada faltante con la media de valores válidos en el mismo grupo paciente-día
+            group_means = df.groupby(["Paciente", "Day"])[col].transform("mean")
+            df[col] = df[col].fillna(group_means)
 
         return df

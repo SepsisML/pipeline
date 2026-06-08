@@ -64,7 +64,7 @@ class CustomMeanImputationStrategy:
         return df
 
     def lab_imputation(self, df, lab_attributes):
-        for col in lab_attributes:
+        for col in lab_attributes:  
             # Marcar faltantes como NaN para que el groupby los ignore
             df.loc[df[col] == -9999, col] = float("nan")
 

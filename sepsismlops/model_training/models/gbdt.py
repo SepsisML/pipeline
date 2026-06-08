@@ -18,10 +18,19 @@ class GradientBoostedDecisionTrees:
         self.cross_validation = cross_validation
         self.groups = groups
 
+    @property
+    def best_score_(self):
+        return self.best_model.best_score_
+
+    @staticmethod
+    def _fill_nans(X):
+        return X.fillna(-9999) if hasattr(X, "fillna") else np.where(np.isnan(X), -9999, X)
+
     def grid_search(self, X_train, y_train, random_state=1):
         """
         Realiza la búsqueda de hiperparámetros mediante GridSearchCV.
         """
+        X_train = self._fill_nans(X_train)
 
         # Define el espacio de búsqueda
         space = {
@@ -60,7 +69,7 @@ class GradientBoostedDecisionTrees:
         # Almacena el mejor modelo y parámetros
         self.best_model = result
         self.best_params = result.best_params_
-        return self.best_model, self.best_params
+        return self, self.best_params
 
     def predict(self, X_test):
         """
@@ -68,7 +77,7 @@ class GradientBoostedDecisionTrees:
         """
         if self.best_model is None:
             raise ValueError("El modelo no ha sido entrenado aún.")
-        y_pred = self.best_model.predict(X_test)
+        y_pred = self.best_model.predict(self._fill_nans(X_test))
         return y_pred
 
     def evaluate(self, X_test, y_test):

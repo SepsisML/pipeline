@@ -1,11 +1,11 @@
 experiment:
   name: "First lgbm"
 run:
-  name: "lgbm knn imputation strategy"
+  name: "gbdt knn imputation strategy"
 algorithm:
-  training_algorithm: "lgbm"
+  training_algorithm: "gbdt"
 imputation:
-  strategy: "custom-mean"
+  strategy: "mean"
   fill_value: null
 path:
   input_path: "data/raw/hospitalA_Not_Imputed.csv"

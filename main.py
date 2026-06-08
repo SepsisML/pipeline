@@ -45,13 +45,13 @@ def preprocess_pipeline(config):
     mlflow.log_param("imputation_strategy", strategy)
     df = data_processor.load_data(config["path"]["input_path"])
 
-    evaluate_imputation_quality(df, strategy)
+    #evaluate_imputation_quality(df, strategy)
 
     imputed_df = data_processor.impute_data(df)
     group_df = data_processor.group_data(imputed_df)
     normalized_df = min_max_normalize(group_df)
-    X_train, X_test, y_train, y_test, cv, groups = data_processor.split_data(normalized_df)
-    return X_train, X_test, y_train, y_test, cv, groups
+    X_train, X_test, y_train, y_test, cv, groups, patient_ids_test = data_processor.split_data(normalized_df)
+    return X_train, X_test, y_train, y_test, cv, groups, patient_ids_test
     
     
     ## Pipeline desde datos ya imputados
@@ -91,11 +91,13 @@ def train_and_log_model(X_train, y_train, algorithm, config):
     return model
 
 
-def evaluate_model(model, X_train, y_train, X_test, y_test):
+def evaluate_model(model, X_train, y_train, X_test, y_test, patient_ids_test):
     y_pred = model.predict(X_test)
     metrics = MetricsStep(y_pred, X_train, y_train, X_test, y_test)
     f1 = metrics.plot_f1_score()
-    mlflow.log_metrics({'f1_score': f1})
+    utility = metrics.compute_utility_score(patient_ids_test)
+    print(f"Utility score: {utility:.4f}")
+    mlflow.log_metrics({'f1_score': f1, 'utility_score': utility})
     metrics.plot_confusion_matrix()
 
 
@@ -120,14 +122,14 @@ def main():
 
     with mlflow.start_run(run_name=config["run"]["name"]):
         ## Pasos 1-6: preprocesamiento
-        X_train, X_test, y_train, y_test, cv, groups = preprocess_pipeline(config)
+        X_train, X_test, y_train, y_test, cv, groups, patient_ids_test = preprocess_pipeline(config)
 
         ## Paso 7: entrenar modelo
         model_class = select_model(config, cross_validation=cv, groups=groups)
         model = train_and_log_model(X_train, y_train, model_class, config)
 
         ## Paso 8: evaluar modelo
-        evaluate_model(model, X_train, y_train, X_test, y_test)
+        evaluate_model(model, X_train, y_train, X_test, y_test, patient_ids_test)
 
 
 if __name__ == "__main__":

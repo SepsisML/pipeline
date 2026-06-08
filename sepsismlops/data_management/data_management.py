@@ -158,8 +158,9 @@ class DataManagementStep:
         
         ##Prepare second split
         groups = df.loc[train_mask, "Paciente"]
+        patient_ids_test = df.loc[test_mask, "Paciente"].reset_index(drop=True)
         cross_validation = GroupKFold(
             self.n_splits)
 
-        return X_train, X_test, y_train, y_test, cross_validation, groups
+        return X_train, X_test, y_train, y_test, cross_validation, groups, patient_ids_test
     

@@ -1,7 +1,10 @@
 import mlflow
+import numpy as np
+import pandas as pd
 from sklearn import metrics
 import matplotlib.pyplot as plt
 from mlxtend.plotting import plot_confusion_matrix
+
 
 
 class MetricsStep:
@@ -110,6 +113,68 @@ class MetricsStep:
     #     best_f1 = f1_scores[best_idx]
     #     print(f"Best threshold by F1: {best_threshold:.4f} | F1: {best_f1:.4f}")
     #     return best_threshold, best_f1
+
+    def u_tp(self, delta_t: float) -> float:
+        """U_TP: utilidad de predecir 1 en paciente con sepsis. delta_t = t - t_sepsis."""
+        dt_early, dt_optimal, dt_late = -12, -6, 3
+        if delta_t < dt_early:
+            return 0.0
+        elif delta_t <= dt_optimal:
+            return (delta_t - dt_early) / (dt_optimal - dt_early)
+        elif delta_t <= dt_late:
+            return 1.0 - (delta_t - dt_optimal) / (dt_late - dt_optimal)
+        else:
+            return -2.0
+
+
+    def u_fn(self, delta_t: float) -> float:
+        """U_FN: penalización por predecir 0 en paciente con sepsis. delta_t = t - t_sepsis."""
+        dt_optimal, dt_late = -6, 3
+        if delta_t <= dt_optimal:
+            return 0.0
+        elif delta_t <= dt_late:
+            return -2.0 * (delta_t - dt_optimal) / (dt_late - dt_optimal)
+        else:
+            return -2.0
+
+
+    def u_fp(self) -> float:
+        """U_FP: penalización por predecir 1 en paciente sin sepsis (por hora)."""
+        return -0.05
+
+    def compute_utility_score(self, patient_ids: pd.Series) -> float:
+        df = self.X_test[["ICULOS"]].copy().reset_index(drop=True)
+        df["Paciente"] = patient_ids.values
+        df["y_pred"] = self.y_pred
+        df["y_test"] = self.y_test.reset_index(drop=True).values
+
+        patient_scores = []
+        for _, grupo in df.groupby("Paciente"):
+            grupo = grupo.sort_values("ICULOS")
+            y_true = grupo["y_test"].values
+            y_hat  = grupo["y_pred"].values
+            iculos = grupo["ICULOS"].values
+
+            has_sepsis = y_true.max() == 1
+            score = 0.0
+
+            if has_sepsis:
+                t_sepsis = iculos[np.where(y_true == 1)[0][0]]
+                for t, pred in zip(iculos, y_hat):
+                    delta_t = t - t_sepsis
+                    if pred == 1:
+                        score += self.u_tp(delta_t)  # U_TP
+                    else:
+                        score += self.u_fn(delta_t)            # U_FN
+            else:
+                for pred in y_hat:
+                    if pred == 1:
+                        score += self.u_fp()                   # U_FP
+                    # U_TN = 0, no contribuye
+
+            patient_scores.append(score)
+
+        return float(np.mean(patient_scores)) if patient_scores else 0.0
 
     def plot_precision_recall_curve(self):
         if self.y_proba is None:
